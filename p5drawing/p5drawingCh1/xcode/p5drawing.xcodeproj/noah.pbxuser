@@ -2,9 +2,9 @@
 {
 	00BAE6590E7ED9C10018A608 /* p5drawingApp.cpp */ = {
 		uiCtxt = {
-			sepNavIntBoundsRect = "{{0, 0}, {856, 949}}";
-			sepNavSelRange = "{1959, 0}";
-			sepNavVisRange = "{975, 940}";
+			sepNavIntBoundsRect = "{{0, 0}, {856, 845}}";
+			sepNavSelRange = "{511, 0}";
+			sepNavVisRange = "{0, 698}";
 		};
 	};
 	29B97313FDCFA39411CA2CEA /* Project object */ = {
@@ -46,6 +46,7 @@
 			4FC3F14712BBC70000D1A9F9 /* PBXTextBookmark */ = 4FC3F14712BBC70000D1A9F9 /* PBXTextBookmark */;
 			4FC3F15112BBC75300D1A9F9 /* PBXTextBookmark */ = 4FC3F15112BBC75300D1A9F9 /* PBXTextBookmark */;
 			4FC3F15412BBC76300D1A9F9 /* PBXTextBookmark */ = 4FC3F15412BBC76300D1A9F9 /* PBXTextBookmark */;
+			4FC3F16312BBC80300D1A9F9 /* PBXTextBookmark */ = 4FC3F16312BBC80300D1A9F9 /* PBXTextBookmark */;
 		};
 		sourceControlManager = 4FC3F14D12BBC70000D1A9F9 /* Source Control */;
 		userBuildSettings = {
@@ -75,6 +76,8 @@
 		executableUserSymbolLevel = 0;
 		libgmallocEnabled = 0;
 		name = p5drawing;
+		savedGlobals = {
+		};
 		showTypeColumn = 0;
 		sourceDirectories = (
 		);
@@ -112,7 +115,7 @@
 		fRef = 00BAE6590E7ED9C10018A608 /* p5drawingApp.cpp */;
 		name = "p5drawingApp.cpp: 72";
 		rLen = 0;
-		rLoc = 1914;
+		rLoc = 1020;
 		rType = 0;
 		vrLen = 983;
 		vrLoc = 975;
@@ -122,10 +125,20 @@
 		fRef = 00BAE6590E7ED9C10018A608 /* p5drawingApp.cpp */;
 		name = "p5drawingApp.cpp: 73";
 		rLen = 0;
-		rLoc = 1959;
+		rLoc = 1064;
 		rType = 0;
 		vrLen = 940;
 		vrLoc = 975;
+	};
+	4FC3F16312BBC80300D1A9F9 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 00BAE6590E7ED9C10018A608 /* p5drawingApp.cpp */;
+		name = "p5drawingApp.cpp: 27";
+		rLen = 0;
+		rLoc = 511;
+		rType = 0;
+		vrLen = 698;
+		vrLoc = 0;
 	};
 	8D1107260486CEB800E47090 /* p5drawing */ = {
 		activeExec = 0;
