@@ -40,18 +40,50 @@
 					PBXFileDataSource_Target_ColumnID,
 				);
 			};
-			PBXPerProjectTemplateStateSaveDate = 314296798;
-			PBXWorkspaceStateSaveDate = 314296798;
+			PBXConfiguration.PBXTargetDataSource.PBXTargetDataSource = {
+				PBXFileTableDataSourceColumnSortingDirectionKey = "-1";
+				PBXFileTableDataSourceColumnSortingKey = PBXFileDataSource_Filename_ColumnID;
+				PBXFileTableDataSourceColumnWidthsKey = (
+					20,
+					638,
+					60,
+					20,
+					48.16259765625,
+					43,
+					43,
+				);
+				PBXFileTableDataSourceColumnsKey = (
+					PBXFileDataSource_FiletypeID,
+					PBXFileDataSource_Filename_ColumnID,
+					PBXTargetDataSource_PrimaryAttribute,
+					PBXFileDataSource_Built_ColumnID,
+					PBXFileDataSource_ObjectSize_ColumnID,
+					PBXFileDataSource_Errors_ColumnID,
+					PBXFileDataSource_Warnings_ColumnID,
+				);
+			};
+			PBXPerProjectTemplateStateSaveDate = 314300817;
+			PBXWorkspaceStateSaveDate = 314300817;
 		};
 		perUserProjectItems = {
+			4F854AAC12BBD9B400A66E7B /* PBXTextBookmark */ = 4F854AAC12BBD9B400A66E7B /* PBXTextBookmark */;
 			4FC3F1BE12BBCA4E00D1A9F9 /* PBXTextBookmark */ = 4FC3F1BE12BBCA4E00D1A9F9 /* PBXTextBookmark */;
 			4FC3F1BF12BBCA4E00D1A9F9 /* PBXTextBookmark */ = 4FC3F1BF12BBCA4E00D1A9F9 /* PBXTextBookmark */;
-			4FC3F1C012BBCA4E00D1A9F9 /* PBXTextBookmark */ = 4FC3F1C012BBCA4E00D1A9F9 /* PBXTextBookmark */;
 			4FC3F1CC12BBCA7500D1A9F9 /* PBXTextBookmark */ = 4FC3F1CC12BBCA7500D1A9F9 /* PBXTextBookmark */;
 		};
 		sourceControlManager = 4FC3F14D12BBC70000D1A9F9 /* Source Control */;
 		userBuildSettings = {
 		};
+	};
+	4F854AAC12BBD9B400A66E7B /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 4FC3F1BB12BBCA3D00D1A9F9 /* Circle.h */;
+		name = "Circle.h: 18";
+		rLen = 0;
+		rLoc = 308;
+		rType = 0;
+		vrLen = 308;
+		vrLoc = 0;
 	};
 	4FC3F14212BBC6E300D1A9F9 /* p5drawing */ = {
 		isa = PBXExecutable;
@@ -106,7 +138,7 @@
 	};
 	4FC3F1BB12BBCA3D00D1A9F9 /* Circle.h */ = {
 		uiCtxt = {
-			sepNavIntBoundsRect = "{{0, 0}, {856, 518}}";
+			sepNavIntBoundsRect = "{{0, 0}, {856, 512}}";
 			sepNavSelRange = "{308, 0}";
 			sepNavVisRange = "{0, 308}";
 		};
@@ -129,16 +161,6 @@
 		rLoc = 1072;
 		rType = 0;
 		vrLen = 1084;
-		vrLoc = 0;
-	};
-	4FC3F1C012BBCA4E00D1A9F9 /* PBXTextBookmark */ = {
-		isa = PBXTextBookmark;
-		fRef = 4FC3F1BB12BBCA3D00D1A9F9 /* Circle.h */;
-		name = "Circle.h: 1";
-		rLen = 0;
-		rLoc = 0;
-		rType = 0;
-		vrLen = 136;
 		vrLoc = 0;
 	};
 	4FC3F1CC12BBCA7500D1A9F9 /* PBXTextBookmark */ = {

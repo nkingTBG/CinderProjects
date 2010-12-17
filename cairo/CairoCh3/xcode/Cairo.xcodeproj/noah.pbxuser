@@ -4,7 +4,7 @@
 		uiCtxt = {
 			sepNavIntBoundsRect = "{{0, 0}, {894, 962}}";
 			sepNavSelRange = "{0, 1753}";
-			sepNavVisRange = "{0, 864}";
+			sepNavVisRange = "{0, 840}";
 		};
 	};
 	29B97313FDCFA39411CA2CEA /* Project object */ = {
@@ -38,16 +38,48 @@
 					PBXFileDataSource_Target_ColumnID,
 				);
 			};
-			PBXPerProjectTemplateStateSaveDate = 314297372;
-			PBXWorkspaceStateSaveDate = 314297372;
+			PBXConfiguration.PBXTargetDataSource.PBXTargetDataSource = {
+				PBXFileTableDataSourceColumnSortingDirectionKey = "-1";
+				PBXFileTableDataSourceColumnSortingKey = PBXFileDataSource_Filename_ColumnID;
+				PBXFileTableDataSourceColumnWidthsKey = (
+					20,
+					579,
+					60,
+					20,
+					48.16259765625,
+					43,
+					43,
+				);
+				PBXFileTableDataSourceColumnsKey = (
+					PBXFileDataSource_FiletypeID,
+					PBXFileDataSource_Filename_ColumnID,
+					PBXTargetDataSource_PrimaryAttribute,
+					PBXFileDataSource_Built_ColumnID,
+					PBXFileDataSource_ObjectSize_ColumnID,
+					PBXFileDataSource_Errors_ColumnID,
+					PBXFileDataSource_Warnings_ColumnID,
+				);
+			};
+			PBXPerProjectTemplateStateSaveDate = 314300503;
+			PBXWorkspaceStateSaveDate = 314300503;
 		};
 		perUserProjectItems = {
-			4FC3F24212BBCCE000D1A9F9 /* PBXTextBookmark */ = 4FC3F24212BBCCE000D1A9F9 /* PBXTextBookmark */;
+			4F8549CB12BBD87500A66E7B /* PBXTextBookmark */ = 4F8549CB12BBD87500A66E7B /* PBXTextBookmark */;
 			4FC3F24E12BBCD3700D1A9F9 /* PBXTextBookmark */ = 4FC3F24E12BBCD3700D1A9F9 /* PBXTextBookmark */;
 		};
 		sourceControlManager = 4FC3F13D12BBC24F00D1A9F9 /* Source Control */;
 		userBuildSettings = {
 		};
+	};
+	4F8549CB12BBD87500A66E7B /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 00BAE6590E7ED9C10018A608 /* CairoApp.cpp */;
+		name = "CairoApp.cpp: 1";
+		rLen = 1753;
+		rLoc = 0;
+		rType = 0;
+		vrLen = 840;
+		vrLoc = 0;
 	};
 	4FC3F12112BBC24B00D1A9F9 /* Cairo */ = {
 		isa = PBXExecutable;
@@ -92,16 +124,6 @@
 	4FC3F13E12BBC24F00D1A9F9 /* Code sense */ = {
 		isa = PBXCodeSenseManager;
 		indexTemplatePath = "";
-	};
-	4FC3F24212BBCCE000D1A9F9 /* PBXTextBookmark */ = {
-		isa = PBXTextBookmark;
-		fRef = 00BAE6590E7ED9C10018A608 /* CairoApp.cpp */;
-		name = "CairoApp.cpp: 21";
-		rLen = 0;
-		rLoc = 335;
-		rType = 0;
-		vrLen = 1182;
-		vrLoc = 0;
 	};
 	4FC3F24E12BBCD3700D1A9F9 /* PBXTextBookmark */ = {
 		isa = PBXTextBookmark;
