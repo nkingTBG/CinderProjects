@@ -1,0 +1,455 @@
+/*! \page basic_drawing2 P5toCI - Basic Drawing 2
+<h1>P5 to CI - Basic Drawing 2</h1>
+\section intro Intro
+The drawing app we made in Basic Drawing 1 is pretty simple.  So now let's add some more functionality to our app and make it more powerful and more fun to use.
+\section changing_brush Changing the Brush
+Let's start by altering the brush size based on how fast the mouse is moving.\n
+\n
+We can start by adding a new global variable to our project, called mouseVelocity.  We can determine the mouse's velocity by finding the difference between its current position and its last position.  We'll also need a variable to store its last position, called mouseLast.
+\n
+\n
+First we'll need to add these new variables to our App Class
+\code
+class p5drawingApp : public AppBasic {
+public:
+	void setup();
+	void update();
+	void draw();
+	
+	Vec2f xyPosition;
+	float radius;
+	
+	void mouseDrag( MouseEvent event );
+	void mouseUp( MouseEvent event );
+	
+	void keyDown( KeyEvent event );
+	
+	bool click;
+	
+	Vec2f mouseVelocity;   // <--this line of code was added
+	Vec2f mouseLast;       // <--this line was added too
+};
+\endcode
+
+Next we assign mouseLast an initial value of 0 and change our initial radius value to 2.
+
+\code
+void p5drawingApp::setup()
+{
+	xyPosition = Vec2f( 200.0f, 200.0f);
+	radius = 2.0f;                    // <--this line of code was edited
+	gl::clear();
+	click = false;
+	mouseLast = Vec2f (0.0f, 0.0f);    // <--this line of code was added
+}
+\endcode
+
+And then we can calculate the mouseVelocity of each frame.
+
+\code
+void p5drawingApp::update()
+{
+	mouseVelocity = xyPosition - mouseLast;
+	mouseLast = xyPosition;
+}
+\endcode
+
+In order to get this info to effect the size of our brush, we need to add a relationship between the brush size and the mouse velocity.  To make the speed of the mouse make the size of our brush larger, we'll need to add the velocity to the radius (we'll do this for both the x and y position). And to prevent our brush from getting too big, we can add another if statement that prevents the radius from going above a certain threshold (50 pixels)
+
+\code
+void p5drawingApp::update()
+{
+	mouseVelocity = xyPosition - mouseLast;
+	radius = 2.0f + abs(mouseVelocity.x) + abs(mouseVelocity.y);
+	if(radius > 50){
+		radius = 50;
+	}
+	mouseLast = xyPosition;
+}
+\endcode
+
+\image html cinder_painting1.png
+\n
+\n
+Build and run your code and see how the speed of your mouse affects the radius of the circles being drawn.
+
+\section frame_rate Improving the Frame Rate
+
+You may have noticed that when you move your mouse quickly, you get a bunch of individual dots rather than a smooth brush stroke.  This is because the program is locating the mouse once per frame, and then drawing a circle at the mouse location.  So even though 30 frames per second is super fast, its not fast enough to draw smooth lines.  We'll thoroughly solve this problem in some of the future lessons, but in the meantime, let's start by increasing our framerate to 100 frames per second.\n
+\n
+First we need to add the prepareSettings() function to our App Class:
+
+\code
+class p5drawingApp : public AppBasic {
+public:
+	void prepareSettings( Settings *settings ); //<-- This line of code gets added
+	void setup();
+	void update();
+	void draw();
+	
+	Vec2f xyPosition; 
+	float radius;
+	
+	void mouseDrag( MouseEvent event );
+	void mouseUp( MouseEvent event );
+	
+	void keyDown( KeyEvent event);
+	
+	bool click;
+	
+	Vec2f mouseVelocity;
+	Vec2f mouseLast;
+};
+\endcode
+
+And then we define our settings in our prepareSettings() function:
+
+\code
+void p5drawingApp::prepareSettings( Settings *settings )
+{
+	settings->setFrameRate( 100.0f );
+}
+\endcode
+
+Note that the prepareSettings function gets called at the very beginning of your app running, just before your output window is created.
+
+\section adding_color Adding Color
+
+Color is the spice of life, so let's add some color to our drawing tool.\n
+\n
+If we simply place one line of code in our draw loop, we can instantly add color to our circles. Cinder has a built-in datatype called <em>Colorf</em>.  A Colorf function takes 3 floats as its arguments, each one representing the amount of Red, Green, and Blue in the color, represented as a value from 0.0 to 1.0.
+
+\code
+void p5drawingApp::draw()
+{   
+	gl::color( Colorf(0.5f, 0.5f, 0.1f) ); //<-- this will make a pea green color
+	if(click){
+		gl::drawSolidCircle( xyPosition, radius );
+	}
+}
+\endcode
+
+\image html cinder_painting2.png
+\n
+\n
+Now we can draw in any color we want.  But it could be even more interesting to have a different color with each frame.  Let's store our color in a Colorf variable that we can dynamically change.  First let's add this variable to our App Class:
+
+\code
+class p5drawingApp : public AppBasic {
+public:
+	void prepareSettings( Settings *settings );
+	void setup();
+	void update();
+	void draw();
+	
+	Vec2f xyPosition; 
+	float radius;
+	
+	void mouseDrag( MouseEvent event );
+	void mouseUp( MouseEvent event );
+	
+	void keyDown( KeyEvent event);
+	
+	bool click;
+	
+	Vec2f mouseVelocity;
+	Vec2f mouseLast;
+	
+	Colorf color;	//<-- Note that this single variable stores all three RGB values within it.
+};
+\endcode
+
+Then we'll insert our color variable into the gl::color() function in our draw() loop:
+
+\code
+void p5drawingApp::draw()
+{   
+	gl::color( color );
+	if(click){
+		gl::drawSolidCircle( xyPosition, radius );
+	}
+}
+\endcode
+
+And finally we'll dynamically modify the individual RGB values in our update() loop:
+
+\code
+void p5drawingApp::update()
+{   
+	color.r = sin( getElapsedSeconds() / 1.0 ) / 2.0f + 0.5f; //<-- The R-channel of our color will fluctuate between 0 and 1 at 100% speed
+	color.g = sin( getElapsedSeconds() / 1.5 ) / 2.0f + 0.5f; //<-- The G-channel of our color will fluctuate between 0 and 1 at 67% speed
+	color.b = sin( getElapsedSeconds() / 2.0 ) / 2.0f + 0.5f; //<-- The B-channel of our color will fluctuate between 0 and 1 at 50% speed
+	
+	mouseVelocity = xyPosition - mouseLast;
+	radius = 2.0f + abs(mouseVelocity.x) + abs(mouseVelocity.y);
+	if(radius > 50){
+		radius = 50;
+	}
+	mouseLast = xyPosition;
+}
+\endcode
+
+About the math being used:\n
+\n
+
+Using basic trigonometry, if we were to write the code y = sin(x), as x increases, y would cycle between 1.0 and -1.0.  This cycling is super useful, but with our color example, we want that range to only be from 1.0 to 0.0.  So if we take that same range and divide it by 2, we'll get a range of 0.5 to -0.5, and then if we add 0.5 to it, we'll get our desired range of 1.0 to 0.0.  By dividing the elapsed seconds, we are slowing down the pace of the fluctuation, and we could similarly speed it up by multiplying.
+\n
+\n
+In the below image, captured from the Grapher program (which is included with OSX), you can see sin waves at various speeds, based on x getting divided by larger and larger numbers.\n
+\n
+
+\image html sin_waves.png
+\n
+\n
+
+Now we can make some really colorful drawings!
+\n
+\n
+\image html cinder_painting3.png
+\n
+
+\section color_array Storing Colors in an Array
+
+If we want more precise control over our colors, we could predefine some random colors in an array, and then change which color we are drawing with on-the-fly.\n
+\n
+Let's begin by including some built-in random functions and by creating some new variables in our App Class.  And we'll need to create an array in which to store our colors.
+
+\code
+#include "cinder/app/AppBasic.h"
+#include "cinder/gl/gl.h"
+#include "cinder/Rand.h" //<-- Add this include statement, so we can use some built-in random functions
+using namespace ci;
+using namespace ci::app;
+using namespace std;
+
+class p5drawingApp : public AppBasic {
+public:
+	void prepareSettings( Settings *settings );
+	void setup();
+	void update();
+	void draw();
+	
+	Vec2f xyPosition; 
+	float radius;
+	
+	void mouseDrag( MouseEvent event );
+	void mouseUp( MouseEvent event );
+	
+	void keyDown( KeyEvent event);
+	
+	bool click;
+	
+	Vec2f mouseVelocity;
+	Vec2f mouseLast;
+	
+	Colorf color;
+	Colorf colorArray[5];  				// <-- Creates a new array with 5 values
+	
+};
+\endcode
+
+Next we'll want to give our array initial values in the setup() function.  But rather than going through the tedious steps of defining each individual value for each individual array, let's use a for-loop to do this work for us.  And rather than choosing our own colors, let's let the Rand::randomFloat() function pick the values for us.
+
+\code
+void p5drawingApp::setup()
+{
+	xyPosition = Vec2f( 200.0f, 200.0f);
+	radius = 2.0f;
+	gl::clear();
+	click = false;
+	mouseLast = Vec2f (0.0f, 0.0f);
+	
+	Rand::randomize(); //<-- this function resets the random generator so that each time our app runs, our random values are unique
+	
+	// the syntax for this for-loop is identical to what you would write Processing!
+	for (int i = 0; i < 5; i++) {
+		colorArray[i].r = Rand::randFloat(1.0); //<-- this will create a random float value between 0.0 and 1.0
+		colorArray[i].g = Rand::randFloat(1.0);
+		colorArray[i].b = Rand::randFloat(1.0);
+	}
+	
+	color = colorArray[0]; //<-- let's have our color variable take values from the colorArray's first indexed position, 0.
+}
+\endcode
+
+Now let's add to our keyboard event listener, so that when we press the number keys (1 through 5), it will change the drawing color to a different stored color in our array.
+
+\code
+void p5drawingApp::keyDown( KeyEvent event ) {
+    if( event.getChar() == ' ' ){
+        gl::clear();
+    }
+	
+	//all of the below code gets added.  Note that the number key and index value is offset by 1.
+	if( event.getChar() == '1' ){
+        color = colorArray[0];
+    }
+	if( event.getChar() == '2' ){
+        color = colorArray[1];
+    }
+	if( event.getChar() == '3' ){
+        color = colorArray[2];
+    }
+	if( event.getChar() == '4' ){
+        color = colorArray[3];
+    }
+	if( event.getChar() == '5' ){
+        color = colorArray[4];
+    }
+
+}
+\endcode
+
+Cool!  Now we have five different colors to draw with, and we can simply cycle through them by pressing the number keys.
+\n
+\n
+\image html cinder_painting4.png
+\n
+\n
+Just to make it a little easier to know which color we are actively using, let's add a small circle to the bottom right corner of the screen that shows us our active color.
+
+\code
+void p5drawingApp::draw()
+{   
+	gl::color( color );
+	if(click){
+		gl::drawSolidCircle( xyPosition, radius );
+	}
+	float xCoord = getWindowWidth() - 10;                  //<-- let's grab the width of our window and offset our value slightly
+	float yCoord = getWindowHeight() - 10;                 //<-- let's grab the height of our window and offset our value slightly
+	gl::drawSolidCircle( Vec2f(xCoord, yCoord), 8.0f );    //<-- let's create a circle in the corner, with a radius slightly smaller than our offset
+}
+\endcode
+
+
+\section wrap_up Wrap Up
+Now we have a drawing tool that is easy and fun to use!
+
+\n
+\n
+
+\image html cinder_painting5.png
+\n
+\n
+
+And here is the final code:
+
+\code
+#include "cinder/app/AppBasic.h"
+#include "cinder/gl/gl.h"
+#include "cinder/Rand.h"
+using namespace ci;
+using namespace ci::app;
+using namespace std;
+
+class p5drawingApp : public AppBasic {
+public:
+	void prepareSettings( Settings *settings );
+	void setup();
+	void update();
+	void draw();
+	
+	Vec2f xyPosition; 
+	float radius;
+	
+	void mouseDrag( MouseEvent event );
+	void mouseUp( MouseEvent event );
+	
+	void keyDown( KeyEvent event);
+	
+	bool click;
+	
+	Vec2f mouseVelocity;
+	Vec2f mouseLast;
+	
+	Colorf color;
+	Colorf colorArray[5];
+	
+};
+
+void p5drawingApp::prepareSettings( Settings *settings )
+{
+	settings->setFrameRate( 100.0f );
+}
+
+void p5drawingApp::setup()
+{
+	xyPosition = Vec2f( 200.0f, 200.0f);
+	radius = 2.0f;
+	gl::clear();
+	click = false;
+	mouseLast = Vec2f (0.0f, 0.0f);
+	
+	Rand::randomize();
+	
+	for (int i = 0; i < 5; i++) {
+		colorArray[i].r = Rand::randFloat(1.0);
+		colorArray[i].g = Rand::randFloat(1.0);
+		colorArray[i].b = Rand::randFloat(1.0);
+	}
+	
+	color = colorArray[0];
+}
+
+void p5drawingApp::update()
+{   	
+	mouseVelocity = xyPosition - mouseLast;
+	radius = 2.0f + abs(mouseVelocity.x) + abs(mouseVelocity.y);
+	if(radius > 50){
+		radius = 50;
+	}
+	mouseLast = xyPosition;
+}
+
+void p5drawingApp::draw()
+{   
+	gl::color( color );
+	if(click){
+		gl::drawSolidCircle( xyPosition, radius );
+	}
+	float xCoord = getWindowWidth() - 10;
+	float yCoord = getWindowHeight() - 10;
+	gl::drawSolidCircle( Vec2f(xCoord, yCoord), 8.0f );
+}
+
+void p5drawingApp::mouseDrag( MouseEvent event )
+{
+	click = true;
+	xyPosition = event.getPos() ;
+}
+
+void p5drawingApp::mouseUp( MouseEvent event )
+{
+	if(event.isLeft()){
+		click = false;
+	}
+}
+
+void p5drawingApp::keyDown( KeyEvent event ) {
+    if( event.getChar() == ' ' ){
+        gl::clear();
+    }
+	
+	if( event.getChar() == '1' ){
+        color = colorArray[0];
+    }
+	if( event.getChar() == '2' ){
+        color = colorArray[1];
+    }
+	if( event.getChar() == '3' ){
+        color = colorArray[2];
+    }
+	if( event.getChar() == '4' ){
+        color = colorArray[3];
+    }
+	if( event.getChar() == '5' ){
+        color = colorArray[4];
+    }
+	
+}
+
+CINDER_APP_BASIC( p5drawingApp, RendererGl )
+\endcode
+
+Now that we're getting more comfortable with Cinder, let's dig even deeper in the \ref basic_drawing3 "basic drawing 3" lesson.
+*/

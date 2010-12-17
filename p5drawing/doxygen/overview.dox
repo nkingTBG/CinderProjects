@@ -1,0 +1,34 @@
+/*! \page p5toCI Overview
+\section intro Introduction
+This tutorial, P5 to CI, was written for people who already know Processing(P5) and want to learn Cinder(CI).  Cinder is a lower-level programming language than Processing, so it is both more particular in its structure and syntax, but also is more efficient and powerful when it comes to graphics-rich content.\n
+\n
+This tutorial is good starting point to familiarize yourself with some basic concepts of Cinder and C++ and prepare you to tackle some more advanced concepts in other topic-based tutorials.
+\n
+\n
+The tutorial is broken up into seven separate chapters, each one outlined below.
+
+\section chapters Chapters Summary
+\ref cinder_app_basics "Cinder App Basics"
+Before jumping into coding, we'll look at the basic components of a Cinder App and create a reusable template.
+
+\ref basic_drawing1 "Basic Drawing 1 - Drawing 101"
+Working with circles, we'll draw shapes to the screen, learn to create simple animations, and incorporate both mouse and keyboard interaction.
+
+\ref basic_drawing2 "Basic Drawing 2 - Adding Color, Dynamism"
+We'll spruce up our drawing app by adding dynamic brush sizes, color, and color variation through basic trigonometry and randomness.
+
+\ref basic_drawing3 "Basic Drawing 3 - Intro to Vectors"
+As a side exploration, we'll explore the concept of Vectors, value averaging, and storing data in Lists.
+
+\ref basic_drawing4 "Basic Drawing 4 - Directional Drawing"
+Incorporating what we learned about vectors, we'll further develop our drawing app to have dynamic, directional brushes.
+
+\ref basic_drawing5 "Basic Drawing 5 - Intro to Objects"
+As a side exploration, we'll explore Object Orientated Programming in the context of bouncing balls.
+
+\ref basic_drawing6 "Basic Drawing 6 - Final Drawing App"
+Incorporating the concept of Objects, we'll finalize our drawing app to be efficient, 3-dimensional, and time-sensitive.
+
+\n
+Ready to jump in? Let's begin with \ref cinder_app_basics "Cinder App Basics".
+*/

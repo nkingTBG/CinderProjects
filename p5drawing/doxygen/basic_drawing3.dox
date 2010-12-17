@@ -1,0 +1,828 @@
+/*! \page basic_drawing3 P5toCI - Basic Drawing 3
+<h1>P5 to CI - Basic Drawing 3</h1>
+\section overview Overview
+Now that we're beginning to feel more comfortable using Cinder, Xcode, and C++, let's dig deeper into some more advanced concepts.  In our drawing applications up until now, we've simply been drawing circles to the screen, and these circles have added up and accumulated to make our drawings.  In this lesson, we'll look closely at vectors (directions in space) and Lists (one type of standard storage containers) to create a drawing application that is considerably more complex.
+
+\section vector_basics Vector Basics
+The word vector has multiple meanings in C++ and Cinder.  While it happens to be the name of a standard storage container type (while List is a second type that we'll be using in a moment) it also is a mathematical concept for defining a direction in space.  If I were to throw a ball to you, the direction of the ball's movement at any moment could be represented as a vector.  Although a vector gets stored as a single point(either as 2 coordinates in a Vec2f, or as 3 coordinates in a Vec3f) it is a representation of a directional angle and a speed at that angle.  How can a point define a direction and speed?  It's not the point alone that defines a direction, it's the angle between the point and the origin (0, 0).  And the distance between the point and origin defines the speed.
+\n
+\n
+In the below illustration, you can see that the point (1, 1) represents an angle of 45 degrees, while the point (0.7, 0.3) represents a vector with about half the angle and about half the distance from the origin.
+\n
+\n
+\image html vectors1.png
+\n
+\n
+The concept of speed becomes pretty clear when you picture the same vector continuing over the course of several moments in time.  Here with only 3 frames showing, you can see how much faster the upper line is moving.
+\n
+\n
+\image html vectors2.png
+\n
+\n
+While it is somewhat abstract to think of direction this way, it can be extremely useful when drawing shapes to the coordinate grid of a computer screen.  In the event that this way of thinking is unfamiliar to you, we'll be visualizing this concept as we build up our application in this tutorial.
+
+\section first_steps First Steps
+Let's begin by starting with a clean slate and building up our application one piece at a time.  We will reuse a large portion of the code from the previous lesson, but will only add it as needed, for the sake of clarity.  To start, let's use our basic app template:
+\code
+
+#include "cinder/app/AppBasic.h"
+using namespace ci;
+using namespace ci::app;
+using namespace std;
+
+class p5drawingApp : public AppBasic {
+public:
+        void setup();
+        void update();
+        void draw();
+};
+
+void p5drawingApp::setup()
+{
+}
+
+void p5drawingApp::update()
+{
+}
+
+void p5drawingApp::draw()
+{
+        gl::clear( );
+}
+
+CINDER_APP_BASIC( p5drawingApp, RendererGl )
+\endcode
+
+Let's use the built in drawVector()function from the gl library.  It takes a starting point and end point as its first two arguments (both as Vec3f data types) and takes 2 additional floats to define the length and radius of the arrow head.  Let's start by drawing a vector from the center of the screen towards the top right corner of the screen.  Note that we'll need to include the gl library at the top of our code.
+\code
+#include "cinder/app/AppBasic.h"
+#include "cinder/gl/gl.h" //<-- this line of code gets added
+
+void p5drawingApp::draw()
+{
+	gl::clear( );
+	gl::drawVector( Vec3f(320.0f, 240.0f, 0.0f), Vec3f(380.0f, 200.0f, 0.0f), 15.0f, 5.0f ); //<-- this line of code gets added
+}
+\endcode
+
+And now we have an arrow drawn to our screen.  Note that because we're just drawing 2 dimensionally, the third value in each of our Vec3f points are simply 0.
+\n
+\n
+\image html vectors2_5.png
+
+\section adding_mouse_interaction Adding Mouse Interaction
+Let's add the ability for the vector to follow the location of our mouse.  We'll need to add a mouseMove event listener, and we'll need a variable to store the location of the mouse.  While we're at it, let's use variables to store the arguments for our drawVector() function too.  Below is the complete code for this initial app.
+\code
+#include "cinder/app/AppBasic.h"
+#include "cinder/gl/gl.h"
+using namespace ci;
+using namespace ci::app;
+using namespace std;
+
+class p5drawingApp : public AppBasic {
+public:
+	void setup();
+	void update();
+	void draw();
+	
+	void mouseMove(MouseEvent event); //declare the mouseMove event listener
+	
+	Vec2f mousePos;                    //a variable to store the mouse's position
+	Vec3f vStart, vEnd;                //two vectors for storing the start and points of the vector being drawn
+	float vWidth, vRadius;             //two floats for storing the width and radius of the vector being drawn
+};
+
+void p5drawingApp::mouseMove(MouseEvent event)
+{
+	mousePos = event.getPos();         //when the mouse moves, record its position
+}
+
+void p5drawingApp::setup()
+{
+	vStart = Vec3f(320.0f, 240.0f, 0.0f);  //set the vector start point to be the center of the screen
+	vWidth = 15.0f;                        //set the vector width to be 15
+	vRadius = 5.0f;                        //and the radius to be 5
+}
+
+void p5drawingApp::update()
+{
+	vEnd = Vec3f(mousePos.x, mousePos.y, 0.0f);    //update the vector end position to be the mouse's current location
+}
+
+void p5drawingApp::draw()
+{
+	gl::clear( );
+	gl::drawVector( vStart, vEnd, vWidth, vRadius);    //draw the vector
+}
+
+CINDER_APP_BASIC( p5drawingApp, RendererGl )
+\endcode
+
+Build and run the app, and you'll see that we have a vector that follows the position of the mouse.
+\n
+\n
+\image html vectors3.png
+
+\n
+\n
+Now instead of having our vector start at the center of the screen, let's use the mouse's last position.\n
+\n
+In our App Class function, let's add a Vec2f called mouseLast; and in the update() function, let's define the vector's starting point as the mouseLast position.
+\code
+class p5drawingApp : public AppBasic {
+public:
+	void setup();
+	void update();
+	void draw();
+	
+	void mouseMove(MouseEvent event);
+		
+	Vec2f mousePos, mouseLast; //<-- this line of code was modified
+	Vec3f vStart, vEnd;
+	float vWidth, vRadius;
+};
+
+void p5drawingApp::update()
+{
+	vStart = Vec3f(mouseLast.x, mouseLast.y, 0.0f); //<-- the starting point is defined by the mouseLast variable
+	vEnd = Vec3f(mousePos.x, mousePos.y, 0.0f);
+	mouseLast = mousePos; //<-- at the end of every frame, the mouse position is plugged into the mouseLast variable.
+}
+\endcode
+
+Now we have a vector following around our mouse, and visualizing the direction that the mouse is moving.
+\n
+\n
+\image html vectors4.png
+\n
+\section normalizing Normalizing Vector Length
+Because the direction is what matters most to us, and not the length of the line, let's store the direction as its own variable, and let's normalize its value so it is always the same length.  Also, note that we are working in drawing units and not with pixel measurements.  It just so happens that right now 1 drawing unit is equal to 1 pixel, but openGL is very flexible and this is something we could change if we wanted.  This is one more reason to use normalized values multiplied out to a particular length.
+\n
+\n
+In the App Class function let's declare a mouseDir variable, and in the update() function let's define it.
+
+\code
+class p5drawingApp : public AppBasic {
+public:
+	void setup();
+	void update();
+	void draw();
+	
+	void mouseMove(MouseEvent event);
+		
+	Vec2f mousePos, mouseLast, mouseDir; //<-- this line of code was modified
+	Vec3f vStart, vEnd;
+	float vWidth, vRadius;
+};
+
+void p5drawingApp::update()
+{
+	mouseDir = mousePos - mouseLast; //<-- the directional vector can be calculated by finding the difference between the two points.
+	mouseDir.safeNormalize(); //<-- the normalize function will keep the same directional angle, but normalize the line length to be one unit
+	mouseDir *= 35.0f; //<-- for visual clarity, let's change the line length from one unit to 35 units
+	vStart = Vec3f(mousePos.x - mouseDir.x, mousePos.y - mouseDir.y, 0.0f); //<-- and let's have the start point be the mouse point less the directional vector
+	vEnd = Vec3f(mousePos.x, mousePos.y, 0.0f);
+	mouseLast = mousePos;
+}
+\endcode
+Now when we build and run our app, we have an arrow of consistent length following around our mouse.  When we move the mouse quickly, the arrow moves nice and smoothly, but when our mouse movements slow down, our arrow starts flickering around because of values between 1 and 0 in either the x or y direction.  Let's ignore these low numbers, by only updating when the values pass a certain threshold.
+\n
+\code
+void p5drawingApp::update()
+{
+	mouseDir = mousePos - mouseLast;
+	if( abs(mouseDir.x) + abs(mouseDir.y) > 2.0f ){ //<-- this if statement let's us only update our arrow when the mouse vector is greater than 2
+		mouseDir.safeNormalize();
+		mouseDir *= 35.0f;
+		vStart = Vec3f(mousePos.x - mouseDir.x, mousePos.y - mouseDir.y, 0.0f);
+		vEnd = Vec3f(mousePos.x, mousePos.y, 0.0f);
+		mouseLast = mousePos;
+	}
+}
+\endcode
+\n
+\n
+\image html vectors5.png
+\n
+\n
+
+Although this last change dramatically helped our app run smoothly, we can make it even better if we average out our values over time, to smooth over any abrupt changes in direction.\n
+\n
+Somehow we need a way to store several values in a group, and easily add one new value and subtract one old value in each frame.  This is where a List comes in handy.
+\section list_basics List Basics
+A List is a type of data container that is flexible in size, and can easily have elements added to it and removed from it.  If you are familiar with the ArrayList class in Processing/Java then this will make a lot of sense to you.  To use it in our app, we simply have to add an include line at the top of our code.  When we first declare our List, we have to indicate what data type we are storing within it.  To create a List of Vec2f values with the name vectorValues, we would declare: list<Vec2f> vectorValues.  To add elements to the beginning or end of a list, we can use push_front() and push_back(); and to subtract elements from the beginning or end of the list, we can use pop_front() and pop_back().  Unlike an array, we can't access List elements by index, but we can iterate through them starting from the beginning or end.
+\n
+\n
+To get our List up and running, there are a number of steps involved, but let's look at each of those steps in isolation from our drawing app.\n
+\n
+To simply create a List, we must include the list class and declare our List object.
+\code
+#include<list>
+list<int> listValues; //this will create a list of integer values with the name 'listValues.'
+\endcode
+Now if want to add objects to our list, we simply call the push_back() function:
+\code
+int value = 1; //this variable is the value we wish to add
+listValues.push_back(value);   //and now we are adding the value to our list
+\endcode
+If we want to, we could add the same value to our list five times in a row:
+\code
+int value = 1;
+for(int i = 0; i < 5; i++) //this loop will add the same value five times
+{
+    listValues.push_back(value);
+}
+//now our list contains: 1, 1, 1, 1, 1.
+\endcode
+Or we could add five different values
+\code
+int value = 1;
+for(int i = 0; i < 5; i++) //this loop will add the same value five times
+{
+    listValues.push_back(value);
+    value++;
+}
+//now our list contains: 1, 2, 3, 4, 5.
+\endcode
+If we want our program to cycle through our list, we can use an iterator:
+\code
+int sum = 0;
+for( list<int>::iterator i = listValues.begin(); i != listValues.end(); ++i )
+{
+    sum += *i; //note that 'i' must get 'de-referenced'.  The asterix achieves this.
+    //If 'i' holds a multi-dimensional object like a Vec3f, you can access the each dimension with an arrow (i->x and i->y are examples) 
+}
+//now our sum variable equals 1+2+3+4+5, or 15.
+\endcode
+If we wanted to add another value, but still only have five total listed elements, we could pop out the first element to make room:
+\code
+listValues.pop_front();
+listValues.push_back(6);
+//now our list contains: 2, 3, 4, 5, 6.
+\endcode
+\section list_integration List Integration
+Assuming we understand the basics of working with Lists, let's go ahead and implement it into our code so we can start averaging our vector values.
+\code
+#include "cinder/app/AppBasic.h"
+#include "cinder/gl/gl.h"
+#include<list>               //<-- This line of code allows us to use Lists in our program
+using namespace ci;
+using namespace ci::app;
+using namespace std;
+
+class p5drawingApp : public AppBasic {
+public:
+	void setup();
+	void update();
+	void draw();
+	
+	void mouseMove(MouseEvent event);
+	
+	Vec2f mousePos, mouseLast, mouseDir;
+	Vec3f vStart, vEnd;
+	float vWidth, vRadius;
+	list<Vec2f> vectorValues;  //<-- Here we are declaring our new list of Vec2f points
+	int valAverageCount;       //<-- And this variable is used to determine how many values we are averaging between
+};
+
+void p5drawingApp::mouseMove(MouseEvent event)
+{
+	mousePos = event.getPos();
+}
+
+void p5drawingApp::setup()
+{	
+	valAverageCount = 5;                               //<-- let's start off with averaging five values
+	vStart = Vec3f(0.0f, 0.0f, 0.0f);                  //<-- And let's have our starting point be at zero.
+	vWidth = 15.0f;
+	vRadius = 5.0f;
+	for(int i = 0; i < valAverageCount-1; i++){        //<-- this for-loop populates our list with four empty values, to start
+		vectorValues.push_back( Vec2f(0.0f, 0.0f) );   //<-- using push_back() we are entering values at the end of our list
+	}
+}
+
+void p5drawingApp::update()
+{
+	mouseDir = mousePos - mouseLast;
+	if( abs(mouseDir.x) + abs(mouseDir.y) > 2.0f ){
+		mouseDir.safeNormalize();                     
+		
+		//after we normalize our value, let's add it to our list.
+		vectorValues.push_back(mouseDir);
+		
+		//and then let's reset the value
+		mouseDir = Vec2f(0.0f, 0.0f);
+		
+		//and now let's get the average of the last five entered values.
+		//we start by iterating through all the values in the list, and adding them to eachother
+		for( list<Vec2f>::iterator listIterator = vectorValues.begin(); listIterator != vectorValues.end(); ++listIterator ) {
+			Vec2f vec = Vec2f(listIterator->x, listIterator->y);
+			mouseDir += vec;
+		}
+		
+		//then we take the total of all five values and divide it by five
+		mouseDir /= valAverageCount;
+		
+		mouseDir *= 35.0f;
+		vStart = Vec3f(mousePos.x - mouseDir.x, mousePos.y - mouseDir.y, 0.0f);
+		vEnd = Vec3f(mousePos.x, mousePos.y, 0.0f);
+		mouseLast = mousePos;
+		
+		//and let's make sure we delete the first value in our list, so that we always only have five values total
+		vectorValues.pop_front();
+	}
+}
+
+void p5drawingApp::draw()
+{   
+    gl::clear();
+	gl::drawVector( vStart, vEnd, vWidth, vRadius);
+}
+
+CINDER_APP_BASIC( p5drawingApp, RendererGl ) 
+\endcode
+If we run our app now, we get a beautiful, smooth motion, by averaging our directional values and throwing out extreme values from slow movement.  Note that if we simply change the value of the valAverageCount variable, we can change how many values are getting averaged at a time.  A setting of 20 will give us even more smooth motion, but at the expense of responsiveness. Probably a value between 3 and 10 is ideal.  For now, let's leave it at 5.
+
+\section finding_more_points Extrapolating More Vectors
+
+Now that we understand what vectors are and have built a nice app for visualizing the direction of the mouse, let's find some directional vectors based on our current one.  Let's imagine that there are additional vectors extended out from the mouse on either side, perpendicular to the movement vector.
+\n
+\n
+\image html vectors6perpendicular.png
+\n
+\n
+To determine these angles, we can simple add 90 degrees and subtract 90 degrees from our current directional vector.  But first we have to convert our directional vector into an angular measurement, so that we can add and subtract other angles from it.\n
+\n
+Let's start by including the cinder math library, which includes numerous trigonometry functions and constant M_PI for pi (3.14159265).
+
+\code
+#include "cinder/app/AppBasic.h"
+#include "cinder/gl/gl.h"
+#include<list>
+#include "cinder/CinderMath.h"        //<-- this allows us to use a lot of built-in math functions
+using namespace ci;
+using namespace ci::app;
+using namespace std;
+
+class p5drawingApp : public AppBasic {
+public:
+	void setup();
+	void update();
+	void draw();
+	
+	void mouseMove(MouseEvent event);
+	
+	Vec2f mousePos, mouseLast, mouseDir;
+	Vec3f vStart, vEnd;
+	float vWidth, vRadius;
+	list<Vec2f> vectorValues;
+	int valAverageCount;
+	
+	float angleOrig, anglePlus, angleMinus; //<-- these are our variables to store our angle values
+};
+\endcode
+
+Next, let's use the atan2() function to go from our vector coordinates to an angular value.  Then we can simply add/subtract 90 degrees from this angle to find our two perpendicular angles.  Note that our trig functions use radians, rather than degrees, so pi/2 is equivalent to 90 degrees.
+\code
+void p5drawingApp::update()
+{
+	mouseDir = mousePos - mouseLast;
+	if( abs(mouseDir.x) + abs(mouseDir.y) > 2.0f ){
+		mouseDir.safeNormalize();
+		
+		vectorValues.push_back(mouseDir);
+		
+		for( list<Vec2f>::iterator listIterator = vectorValues.begin(); listIterator != vectorValues.end(); ++listIterator ) {
+			Vec2f vec = Vec2f(listIterator->x, listIterator->y);
+			mouseDir += vec;
+		}
+		
+		mouseDir /= valAverageCount;
+		
+		//Once our vector is averaged, let's use the atan2() function to determine an angle from its coordinates
+		//note the syntax of how we call that function
+		angleOrig = math<float>::atan2(mouseDir.x, mouseDir.y);    
+		anglePlus = angleOrig + M_PI/2;                 //<-- now let's add 90 degrees to it
+		angleMinus = angleOrig - M_PI/2;                //<-- and subtract 90 degrees from it
+		
+		mouseDir *= 35.0f;
+		vStart = Vec3f(mousePos.x - mouseDir.x, mousePos.y - mouseDir.y, 0.0f);
+		vEnd = Vec3f(mousePos.x, mousePos.y, 0.0f);
+		mouseLast = mousePos;
+		
+		vectorValues.pop_front();
+	}
+}
+\endcode
+Now let's determine and store our two new perpendicular vectors.
+\code
+class p5drawingApp : public AppBasic {
+public:
+	void setup();
+	void update();
+	void draw();
+	
+	void mouseMove(MouseEvent event);
+	
+	Vec2f mousePos, mouseLast, mouseDir, mouseDirPlus, mouseDirMinus; //<-- these are our variables to store our perpendicular vectors
+	Vec3f vStart, vEnd;
+	float vWidth, vRadius;
+	list<Vec2f> vectorValues;
+	int valAverageCount;
+	
+	float angleOrig, anglePlus, angleMinus; 
+};
+
+void p5drawingApp::update()
+{
+	mouseDir = mousePos - mouseLast;
+	if( abs(mouseDir.x) + abs(mouseDir.y) > 2.0f ){
+		mouseDir.safeNormalize();
+		
+		vectorValues.push_back(mouseDir);
+		
+		for( list<Vec2f>::iterator listIterator = vectorValues.begin(); listIterator != vectorValues.end(); ++listIterator ) {
+			Vec2f vec = Vec2f(listIterator->x, listIterator->y);
+			mouseDir += vec;
+		}
+		
+		mouseDir /= valAverageCount;
+
+		angleOrig = math<float>::atan2(mouseDir.x, mouseDir.y);    
+		anglePlus = angleOrig + M_PI/2;
+		angleMinus = angleOrig - M_PI/2;
+		
+		mouseDirPlus = Vec2f( sin(anglePlus), cos(anglePlus) );  //<-- First we'll turn the Plus angle into vector coordinates
+		mouseDirPlus.safeNormalize();                            //<-- Then we'll normalize our vector
+		mouseDirPlus *= 18.0f;                                   //<-- and multiply it to have a length of 18
+		
+		mouseDirMinus = Vec2f( sin(angleMinus), cos(angleMinus) ); //<-- and then do the same for the Minus vector
+		mouseDirMinus.safeNormalize();
+		mouseDirMinus *= 18.0f;
+		
+		mouseDir *= 35.0f;
+		vStart = Vec3f(mousePos.x - mouseDir.x, mousePos.y - mouseDir.y, 0.0f);
+		vEnd = Vec3f(mousePos.x, mousePos.y, 0.0f);
+		mouseLast = mousePos;
+		
+		vectorValues.pop_front();
+	}
+}
+\endcode
+
+And now we can calculate our additional points to draw vector lines to represent our perpendicular vectors.  Let's define our new variables.
+
+\code
+class p5drawingApp : public AppBasic {
+public:
+	void setup();
+	void update();
+	void draw();
+	
+	void mouseMove(MouseEvent event);
+	
+	Vec2f mousePos, mouseLast, mouseDir, mouseDirPlus, mouseDirMinus; 
+	Vec3f vStart, vEnd, vEndPlus, vEndMinus;                           //<-- let's create two new vectors for our two perpendicular points
+	float vWidth, vRadius;
+	list<Vec2f> vectorValues;
+	int valAverageCount;
+	
+	float angleOrig, anglePlus, angleMinus;
+};
+
+void p5drawingApp::update()
+{
+	mouseDir = mousePos - mouseLast;
+	if( abs(mouseDir.x) + abs(mouseDir.y) > 2.0f ){
+		mouseDir.safeNormalize();
+		
+		vectorValues.push_back(mouseDir);
+		
+		for( list<Vec2f>::iterator listIterator = vectorValues.begin(); listIterator != vectorValues.end(); ++listIterator ) {
+			Vec2f vec = Vec2f(listIterator->x, listIterator->y);
+			mouseDir += vec;
+		}
+		
+		mouseDir /= valAverageCount;
+
+		angleOrig = math<float>::atan2(mouseDir.x, mouseDir.y);    
+		anglePlus = angleOrig + M_PI/2;
+		angleMinus = angleOrig - M_PI/2;
+		
+		mouseDirPlus = Vec2f( sin(anglePlus), cos(anglePlus) ); 
+		mouseDirPlus.safeNormalize();                            
+		mouseDirPlus *= 18.0f;                               
+		
+		mouseDirMinus = Vec2f( sin(angleMinus), cos(angleMinus) );
+		mouseDirMinus.safeNormalize();
+		mouseDirMinus *= 18.0f;
+		
+		mouseDir *= 35.0f;
+		vStart = Vec3f(mousePos.x - mouseDir.x, mousePos.y - mouseDir.y, 0.0f);
+		vEnd = Vec3f(mousePos.x, mousePos.y, 0.0f);
+		
+		vEndPlus = Vec3f(mousePos.x + mouseDirPlus.x, mousePos.y + mouseDirPlus.y, 0.0f); //<-- and let's define them in relation to the mouse
+		vEndMinus = Vec3f(mousePos.x + mouseDirMinus.x, mousePos.y + mouseDirMinus.y, 0.0f); //<-- this one too.
+		
+		mouseLast = mousePos;
+		
+		vectorValues.pop_front();
+	}
+}
+\endcode
+And finally, let's update our draw() loop to draw our new arrows:
+\code
+void p5drawingApp::draw()
+{
+	gl::clear( );
+	gl::color( Colorf(1.0f, 1.0f, 1.0f) );                  //here we set the color to white
+	gl::drawVector( vStart, vEnd, vWidth, vRadius);			//this is our original vector, unchanged
+	gl::color( Colorf(0.0f, 1.0f, 0.0f) );                  //now we set the color to green
+	gl::drawVector( vEnd, vEndPlus, vWidth, vRadius);		//this is our Plus 90 vector
+	gl::color( Colorf(1.0f, 0.0f, 0.0f) );                  //now we set the color to red
+	gl::drawVector( vEnd, vEndMinus, vWidth, vRadius);		//this is our Minus 90 vector
+}
+\endcode
+
+Now when we build and run our code, we have two new arrows following our mouse around, but each is perpendicular to the direction of the mouse.
+\n
+\n
+\image html vectors7live_perpendiculars.png
+\n
+\n
+\section velocity Linking Velocity and Length
+Let's modify our code so that the length of these two new vectors is based on the velocity of the mouse.
+\code
+void p5drawingApp::update()
+{
+	mouseDir = mousePos - mouseLast;
+	if( abs(mouseDir.x) + abs(mouseDir.y) > 2.0f ){
+		mouseDir.safeNormalize();
+		
+		vectorValues.push_back(mouseDir);
+		
+		for( list<Vec2f>::iterator listIterator = vectorValues.begin(); listIterator != vectorValues.end(); ++listIterator ) {
+			Vec2f vec = Vec2f(listIterator->x, listIterator->y);
+			mouseDir += vec;
+		}
+		
+		mouseDir /= valAverageCount;
+
+		angleOrig = math<float>::atan2(mouseDir.x, mouseDir.y);    
+		anglePlus = angleOrig + M_PI/2;
+		angleMinus = angleOrig - M_PI/2;
+		
+		Vec2f mouseVelocity = mousePos - mouseLast; //<-- first we need to store the mouse velocity as a vector
+		
+		mouseDirPlus = Vec2f( sin(anglePlus), cos(anglePlus) ); 
+		mouseDirPlus.safeNormalize();                            
+		//mouseDirPlus *= 18.0f;	<-- this line gets deleted and replaced by the below line
+		
+		//starting with a value of 5, increase the multiplier based on the mouse velocity 
+		mouseDirPlus *= 5 + abs(mouseVelocity.x) + abs(mouseVelocity.y);
+		
+		mouseDirMinus = Vec2f( sin(angleMinus), cos(angleMinus) );
+		mouseDirMinus.safeNormalize();
+		//mouseDirMinus *= 18.0f;	<-- this line gets deleted and replaced by the below line
+		
+		//starting with a value of 5, increase the multiplier based on the mouse velocity 
+		mouseDirMinus *= 5 + abs(mouseVelocity.x) + abs(mouseVelocity.y);
+		
+		mouseDir *= 35.0f;
+		vStart = Vec3f(mousePos.x - mouseDir.x, mousePos.y - mouseDir.y, 0.0f);
+		vEnd = Vec3f(mousePos.x, mousePos.y, 0.0f);
+		
+		vEndPlus = Vec3f(mousePos.x + mouseDirPlus.x, mousePos.y + mouseDirPlus.y, 0.0f);
+		vEndMinus = Vec3f(mousePos.x + mouseDirMinus.x, mousePos.y + mouseDirMinus.y, 0.0f);
+		
+		mouseLast = mousePos;
+		
+		vectorValues.pop_front();
+	}
+}
+\endcode
+Although our perpendicular arrows are getting longer when our mouse velocity increases, the change is a bit erratic and also needs to be averaged.  So let's add a second list to store float values for the perpendicular arrow lengths, and a float to store the length at any given moment.\n
+\n
+First let's declare our List in the App Class:
+\code
+class p5drawingApp : public AppBasic {
+public:
+	void setup();
+	void update();
+	void draw();
+	
+	void mouseMove(MouseEvent event);
+	
+	Vec2f mousePos, mouseLast, mouseDir, mouseDirPlus, mouseDirMinus;
+	Vec3f vStart, vEnd, vEndPlus, vEndMinus;
+	float vWidth, vRadius;
+	list<Vec2f> vectorValues;
+	list<float> lengthValues; //this List, of type 'float' will store several length values so we can average them
+	int valAverageCount;
+	
+	float angleOrig, anglePlus, angleMinus, perpLength;  //<-- the last value perpLength gets added
+};
+\endcode
+Next we can add some initial values in the setup() function
+\code
+void p5drawingApp::setup()
+{       
+	gl::clear( );
+	valAverageCount = 5;
+	vStart = Vec3f(0.0f, 0.0f, 0.0f);
+	vWidth = 15.0f;
+	vRadius = 5.0f;
+	for(int i = 0; i < valAverageCount-1; i++){        
+		vectorValues.push_back( Vec2f(0.0f, 0.0f) );   
+	}
+	for(int i = 0; i < valAverageCount-1; i++){        //<-- this for-loop populates our list with four empty values, to start
+		lengthValues.push_back( 5.0f);                 //<-- using push_back() we are entering values at the end of our list
+	}
+}
+\endcode
+And now we can flesh out the rest of our list averaging in the update() function:
+\code
+void p5drawingApp::update()
+{
+	mouseDir = mousePos - mouseLast;
+	if( abs(mouseDir.x) + abs(mouseDir.y) > 2.0f ){
+		mouseDir.safeNormalize();
+		
+		vectorValues.push_back(mouseDir);
+		
+		mouseDir = Vec2f(0.0f, 0.0f);
+		for( list<Vec2f>::iterator listIterator = vectorValues.begin(); listIterator != vectorValues.end(); ++listIterator ) {
+			Vec2f vec = Vec2f(listIterator->x, listIterator->y);
+			mouseDir += vec;
+		}
+		
+		mouseDir /= valAverageCount;
+		
+		angleOrig = atan2(mouseDir.x, mouseDir.y);
+		anglePlus = angleOrig + M_PI/2;
+		angleMinus = angleOrig - M_PI/2;
+		
+		Vec2f mouseVelocity = mousePos - mouseLast;
+		perpLength = abs(mouseVelocity.x) + abs(mouseVelocity.y) + 5; //let's store the current length
+		
+		lengthValues.push_back(perpLength); //next let's add this current length into the List
+		
+		perpLength = 0.0f; //and now that its been entered, let's set it to zero
+		
+		//now we can iterate through the entire list, adding up all of the values
+		for( list<float>::iterator listIterator = lengthValues.begin(); listIterator != lengthValues.end(); ++listIterator ) {
+			float length = *listIterator;
+			perpLength += length;
+		}
+		//and when we divide by the valAverageCount variable, we get the average value
+		perpLength /= valAverageCount;
+		
+		
+		mouseDirPlus = Vec2f( sin(anglePlus), cos(anglePlus) );
+		mouseDirPlus.safeNormalize();
+		mouseDirPlus *= perpLength; //and finally, let's multiply the normalized length by our averaged length
+		
+		mouseDirMinus = Vec2f( sin(angleMinus), cos(angleMinus) );
+		mouseDirMinus.safeNormalize();
+		mouseDirMinus *= perpLength; //and once more for the minus perpendicular
+		
+		mouseDir *= 35.0f;
+		vStart = Vec3f(mousePos.x - mouseDir.x, mousePos.y - mouseDir.y, 0.0f);
+		vEnd = Vec3f(mousePos.x, mousePos.y, 0.0f);
+		
+		vEndPlus = Vec3f(mousePos.x + mouseDirPlus.x, mousePos.y + mouseDirPlus.y, 0.0f);
+		vEndMinus = Vec3f(mousePos.x + mouseDirMinus.x, mousePos.y + mouseDirMinus.y, 0.0f);
+	
+		mouseLast = mousePos;
+		
+		vectorValues.pop_front();
+		lengthValues.pop_front(); //and let's not forgot to pop out the first value so we maintain a consistent list length
+	}
+}
+\endcode
+Now when we build and run our code, we have smooth movement, clear vector perpendiculars, and increasing perpendicular length based on the speed of the mouse
+\n
+\n
+\image html vectors8.png
+\n
+\n
+\section wrap_up Wrap Up
+Here is all the final code for this lesson:
+\code
+#include "cinder/app/AppBasic.h"
+#include "cinder/gl/gl.h"
+#include<list>
+#include "cinder/CinderMath.h"
+using namespace ci;
+using namespace ci::app;
+using namespace std;
+
+class p5drawingApp : public AppBasic {
+public:
+	void setup();
+	void update();
+	void draw();
+	
+	void mouseMove(MouseEvent event);
+	
+	Vec2f mousePos, mouseLast, mouseDir, mouseDirPlus, mouseDirMinus;
+	Vec3f vStart, vEnd, vEndPlus, vEndMinus; 
+	float vWidth, vRadius;
+	list<Vec2f> vectorValues;
+	list<float> lengthValues;
+	int valAverageCount;
+	
+	float angleOrig, anglePlus, angleMinus, perpLength;
+};
+
+void p5drawingApp::mouseMove(MouseEvent event)
+{
+	mousePos = event.getPos();
+}
+
+void p5drawingApp::setup()
+{       
+	gl::clear( );
+	valAverageCount = 5;
+	vStart = Vec3f(0.0f, 0.0f, 0.0f);
+	vWidth = 15.0f;
+	vRadius = 5.0f;
+	for(int i = 0; i < valAverageCount-1; i++){        
+		vectorValues.push_back( Vec2f(0.0f, 0.0f) );   
+	}
+	for(int i = 0; i < valAverageCount-1; i++){ 
+		lengthValues.push_back( 5.0f);
+	}
+}
+
+void p5drawingApp::update()
+{
+	mouseDir = mousePos - mouseLast;
+	if( abs(mouseDir.x) + abs(mouseDir.y) > 2.0f ){
+		mouseDir.safeNormalize();
+		
+		vectorValues.push_back(mouseDir);
+		
+		for( list<Vec2f>::iterator listIterator = vectorValues.begin(); listIterator != vectorValues.end(); ++listIterator ) {
+			Vec2f vec = Vec2f(listIterator->x, listIterator->y);
+			mouseDir += vec;
+		}
+		
+		mouseDir /= valAverageCount;
+
+		angleOrig = math<float>::atan2(mouseDir.x, mouseDir.y);    
+		anglePlus = angleOrig + M_PI/2;
+		angleMinus = angleOrig - M_PI/2;
+		
+		Vec2f mouseVelocity = mousePos - mouseLast;
+		perpLength = abs(mouseVelocity.x) + abs(mouseVelocity.y) + 5;
+		
+		lengthValues.push_back(perpLength);
+		
+		perpLength = 0.0f;
+		
+		for( list<float>::iterator listIterator = lengthValues.begin(); listIterator != lengthValues.end(); ++listIterator ) {
+			float length = *listIterator;
+			perpLength += length;
+		}
+		perpLength /= valAverageCount;
+		
+		
+		mouseDirPlus = Vec2f( sin(anglePlus), cos(anglePlus) );
+		mouseDirPlus.safeNormalize();
+		mouseDirPlus *= perpLength;
+		
+		mouseDirMinus = Vec2f( sin(angleMinus), cos(angleMinus) );
+		mouseDirMinus.safeNormalize();
+		mouseDirMinus *= perpLength;
+		
+		mouseDir *= 35.0f;
+		vStart = Vec3f(mousePos.x - mouseDir.x, mousePos.y - mouseDir.y, 0.0f);
+		vEnd = Vec3f(mousePos.x, mousePos.y, 0.0f);
+		
+		vEndPlus = Vec3f(mousePos.x + mouseDirPlus.x, mousePos.y + mouseDirPlus.y, 0.0f);
+		vEndMinus = Vec3f(mousePos.x + mouseDirMinus.x, mousePos.y + mouseDirMinus.y, 0.0f);
+		
+		mouseLast = mousePos;
+		
+		vectorValues.pop_front();
+		lengthValues.pop_front();
+	}
+}
+
+void p5drawingApp::draw()
+{
+	gl::clear( );
+	gl::color( Colorf(1.0f, 1.0f, 1.0f) );
+	gl::drawVector( vStart, vEnd, vWidth, vRadius);
+	gl::color( Colorf(0.0f, 1.0f, 0.0f) );
+	gl::drawVector( vEnd, vEndPlus, vWidth, vRadius);
+	gl::color( Colorf(1.0f, 0.0f, 0.0f) );
+	gl::drawVector( vEnd, vEndMinus, vWidth, vRadius);
+}
+
+CINDER_APP_BASIC( p5drawingApp, RendererGl ) 
+\endcode
+\section make_drawing Make it a Drawing
+We've done the hard part and created an application that does a lot of calculation to find and store the points we need.  In the next lesson, \ref basic_drawing4 "basic drawing 4", we'll take those points and make an awesome drawing tool from it.
+*/

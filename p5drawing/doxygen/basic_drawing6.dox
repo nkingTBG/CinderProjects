@@ -1,0 +1,1073 @@
+/*! \page basic_drawing6 P5toCI - Basic Drawing 6
+<h1>P5 to CI - Basic Drawing 6</h1>
+\section overview Overview
+In this final lesson, we will make a fully-functioning drawing application that makes use of mouseEvents, vector math, lists, iterators, and custom classes.  Not only will the code be well resolved, but the app its self will be fun to use while producing beautiful results.
+
+\section concept_development Further Development
+Let's pick up where we left off in Basic Drawing 4 with a drawing application that makes direction lines that follow the speed and movement of our mouse. We'll be developing this concept further, so let's begin with that previous code:
+\n
+\n
+\code
+#include "cinder/app/AppBasic.h"
+#include "cinder/gl/gl.h"
+#include<list>
+#include "cinder/CinderMath.h"
+#include "cinder/Rand.h"
+using namespace ci;
+using namespace ci::app;
+using namespace std;
+
+class p5drawingApp : public AppBasic {
+public:
+	void setup();
+	void update();
+	void draw();
+	
+	void mouseDrag(MouseEvent event);
+	void mouseUp(MouseEvent event);
+	void keyDown(KeyEvent event);
+	
+	Vec2f mousePos, mouseLast, mouseDir, mouseDirPlus, mouseDirMinus;
+	Vec3f vStart, vEnd, vEndPlus, vEndMinus; 
+	float vWidth, vRadius;
+	list<Vec2f> vectorValues;
+	list<float> lengthValues;
+	int valAverageCount;
+	
+	float angleOrig, anglePlus, angleMinus, perpLength;
+	Colorf color;
+};
+
+void p5drawingApp::mouseUp(MouseEvent event)
+{
+	vectorValues.clear();
+	lengthValues.clear();
+	
+}
+
+void p5drawingApp::keyDown(KeyEvent event)
+{
+	if( event.getChar() == ' ' ){
+        gl::clear();
+    }
+}
+
+void p5drawingApp::mouseDrag(MouseEvent event)
+{
+	mousePos = event.getPos();
+}
+
+void p5drawingApp::setup()
+{       
+	gl::clear( );
+	valAverageCount = 5;
+	vStart = Vec3f(0.0f, 0.0f, 0.0f);
+	vWidth = 15.0f;
+	vRadius = 5.0f;
+}
+
+void p5drawingApp::update()
+{	
+    color.r = Rand::randFloat();
+	color.g = Rand::randFloat();
+	color.b = Rand::randFloat();
+	
+	mouseDir = mousePos - mouseLast;
+	if( abs(mouseDir.x) + abs(mouseDir.y) > 2.0f ){
+		mouseDir.safeNormalize();
+		
+		vectorValues.push_back(mouseDir);
+		
+		if(vectorValues.size() == valAverageCount+1){
+			
+			vectorValues.pop_front();
+			mouseDir = Vec2f(0.0f, 0.0f);
+			for( list<Vec2f>::iterator listIterator = vectorValues.begin(); listIterator != vectorValues.end(); ++listIterator ) {
+				Vec2f vec = Vec2f(listIterator->x, listIterator->y);
+				mouseDir += vec;
+			}
+			
+			mouseDir /= valAverageCount;
+		}
+		
+		angleOrig = math<float>::atan2(mouseDir.x, mouseDir.y);    
+		anglePlus = angleOrig + M_PI/2;
+		angleMinus = angleOrig - M_PI/2;
+		
+		Vec2f mouseVelocity = mousePos - mouseLast;
+		perpLength = abs(mouseVelocity.x) + abs(mouseVelocity.y) + 5;
+		
+		lengthValues.push_back(perpLength);
+		
+		if(lengthValues.size() == valAverageCount+1){
+			lengthValues.pop_front();
+			perpLength = 0.0f;
+			for( list<float>::iterator listIterator = lengthValues.begin(); listIterator != lengthValues.end(); ++listIterator ) {
+				float length = *listIterator;
+				perpLength += length;
+			}
+			perpLength /= valAverageCount;
+		}
+		
+		mouseDirPlus = Vec2f( sin(anglePlus), cos(anglePlus) );
+		mouseDirPlus.safeNormalize();
+		mouseDirPlus *= perpLength;
+		
+		mouseDirMinus = Vec2f( sin(angleMinus), cos(angleMinus) );
+		mouseDirMinus.safeNormalize();
+		mouseDirMinus *= perpLength;
+		
+		mouseDir *= 35.0f;
+		vStart = Vec3f(mousePos.x - mouseDir.x, mousePos.y - mouseDir.y, 0.0f);
+		vEnd = Vec3f(mousePos.x, mousePos.y, 0.0f);
+		
+		vEndPlus = Vec3f(mousePos.x + mouseDirPlus.x, mousePos.y + mouseDirPlus.y, 0.0f);
+		vEndMinus = Vec3f(mousePos.x + mouseDirMinus.x, mousePos.y + mouseDirMinus.y, 0.0f);
+		
+		mouseLast = mousePos;
+	}
+}
+
+void p5drawingApp::draw()
+{	
+	glLineWidth(perpLength/5);
+	gl::color( color );
+	if(vectorValues.size() == valAverageCount){
+		gl::drawLine(vEndPlus, vEndMinus);
+	}
+}
+
+CINDER_APP_BASIC( p5drawingApp, RendererGl ) 
+\endcode
+\n
+\n
+First let's clean up our code.  We can start by removing the vWidth and vRadius variables from the App Class and the setup() function (we stopped using them as soon as we went from drawing vector arrows to drawing lines).  And let's also remove all the color information from our app, so that we go back to just draw white lines.
+\n
+\n
+The updated code should look like this:
+\n
+\n
+\code
+#include "cinder/app/AppBasic.h"
+#include "cinder/gl/gl.h"
+#include<list>
+#include "cinder/CinderMath.h"
+//#include "cinder/Rand.h" <-- we don't need this anymore
+using namespace ci;
+using namespace ci::app;
+using namespace std;
+
+class p5drawingApp : public AppBasic {
+public:
+	void setup();
+	void update();
+	void draw();
+	
+	void mouseDrag(MouseEvent event);
+	void mouseUp(MouseEvent event);
+	void keyDown(KeyEvent event);
+	
+	Vec2f mousePos, mouseLast, mouseDir, mouseDirPlus, mouseDirMinus;
+	Vec3f vStart, vEnd, vEndPlus, vEndMinus; 
+	//float vWidth, vRadius; <-- these variables get deleted
+	list<Vec2f> vectorValues;
+	list<float> lengthValues;
+	int valAverageCount;
+	
+	float angleOrig, anglePlus, angleMinus, perpLength;
+	//Colorf color; <-- this variable gets deleted
+};
+
+void p5drawingApp::mouseUp(MouseEvent event)
+{
+	vectorValues.clear();
+	lengthValues.clear();
+	
+}
+
+void p5drawingApp::keyDown(KeyEvent event)
+{
+	if( event.getChar() == ' ' ){
+        gl::clear();
+    }
+}
+
+void p5drawingApp::mouseDrag(MouseEvent event)
+{
+	mousePos = event.getPos();
+}
+
+void p5drawingApp::setup()
+{       
+	gl::clear( );
+	valAverageCount = 5;
+	vStart = Vec3f(0.0f, 0.0f, 0.0f);
+	//vWidth = 15.0f; <-- this line gets deleted
+	//vRadius = 5.0f; <-- and so does this one
+}
+
+void p5drawingApp::update()
+{	
+    //color.r = Rand::randFloat(); <-- this gets deleted
+	//color.g = Rand::randFloat(); <-- and this one
+	//color.b = Rand::randFloat(); <-- and this one too
+	
+	mouseDir = mousePos - mouseLast;
+	if( abs(mouseDir.x) + abs(mouseDir.y) > 2.0f ){
+		mouseDir.safeNormalize();
+		
+		vectorValues.push_back(mouseDir);
+		
+		if(vectorValues.size() == valAverageCount+1){
+			
+			vectorValues.pop_front();
+			mouseDir = Vec2f(0.0f, 0.0f);
+			for( list<Vec2f>::iterator listIterator = vectorValues.begin(); listIterator != vectorValues.end(); ++listIterator ) {
+				Vec2f vec = Vec2f(listIterator->x, listIterator->y);
+				mouseDir += vec;
+			}
+			
+			mouseDir /= valAverageCount;
+		}
+		
+		angleOrig = math<float>::atan2(mouseDir.x, mouseDir.y);    
+		anglePlus = angleOrig + M_PI/2;
+		angleMinus = angleOrig - M_PI/2;
+		
+		Vec2f mouseVelocity = mousePos - mouseLast;
+		perpLength = abs(mouseVelocity.x) + abs(mouseVelocity.y) + 5;
+		
+		lengthValues.push_back(perpLength);
+		
+		if(lengthValues.size() == valAverageCount+1){
+			lengthValues.pop_front();
+			perpLength = 0.0f;
+			for( list<float>::iterator listIterator = lengthValues.begin(); listIterator != lengthValues.end(); ++listIterator ) {
+				float length = *listIterator;
+				perpLength += length;
+			}
+			perpLength /= valAverageCount;
+		}
+		
+		mouseDirPlus = Vec2f( sin(anglePlus), cos(anglePlus) );
+		mouseDirPlus.safeNormalize();
+		mouseDirPlus *= perpLength;
+		
+		mouseDirMinus = Vec2f( sin(angleMinus), cos(angleMinus) );
+		mouseDirMinus.safeNormalize();
+		mouseDirMinus *= perpLength;
+		
+		mouseDir *= 35.0f;
+		vStart = Vec3f(mousePos.x - mouseDir.x, mousePos.y - mouseDir.y, 0.0f);
+		vEnd = Vec3f(mousePos.x, mousePos.y, 0.0f);
+		
+		vEndPlus = Vec3f(mousePos.x + mouseDirPlus.x, mousePos.y + mouseDirPlus.y, 0.0f);
+		vEndMinus = Vec3f(mousePos.x + mouseDirMinus.x, mousePos.y + mouseDirMinus.y, 0.0f);
+		
+		mouseLast = mousePos;
+	}
+}
+
+void p5drawingApp::draw()
+{	
+	glLineWidth(perpLength/5);
+	//gl::color( color ); <-- this line gets cut out as well
+	if(vectorValues.size() == valAverageCount){
+		gl::drawLine(vEndPlus, vEndMinus);
+	}
+}
+
+CINDER_APP_BASIC( p5drawingApp, RendererGl ) 
+\endcode
+
+There's quite a lot of code within our update() function, so let's begin by making a new function called extractPerpendiculars and place all the related code inside our function.  First, we'll need to declare a new function in our App Class.
+\n
+\n
+\code
+class p5drawingApp : public AppBasic {
+public:
+	void setup();
+	void update();
+	void draw();
+	void extractPerpendiculars(); //<-- this line of code was added
+	
+	void mouseDrag(MouseEvent event);
+	void mouseUp(MouseEvent event);
+	void keyDown(KeyEvent event);
+	
+	Vec2f mousePos, mouseLast, mouseDir, mouseDirPlus, mouseDirMinus;
+	Vec3f vStart, vEnd, vEndPlus, vEndMinus; 
+	list<Vec2f> vectorValues;
+	list<float> lengthValues;
+	int valAverageCount;
+	
+	float angleOrig, anglePlus, angleMinus, perpLength;
+}
+\endcode
+\n
+\n
+Next we'll need to cut and paste much of our update() code into the new function's definition.
+\n
+\n
+\code
+void p5drawingApp::extractPerpendiculars()
+{
+	//all of this code got cut and pasted from inside the if statement in our update() function
+	
+	mouseDir.safeNormalize();
+	
+	vectorValues.push_back(mouseDir);
+	
+	if(vectorValues.size() == valAverageCount+1){
+		
+		vectorValues.pop_front();
+		mouseDir = Vec2f(0.0f, 0.0f);
+		for( list<Vec2f>::iterator listIterator = vectorValues.begin(); listIterator != vectorValues.end(); ++listIterator ) {
+			Vec2f vec = Vec2f(listIterator->x, listIterator->y);
+			mouseDir += vec;
+		}
+		
+		mouseDir /= valAverageCount;
+	}
+	
+	angleOrig = math<float>::atan2(mouseDir.x, mouseDir.y);    
+	anglePlus = angleOrig + M_PI/2;
+	angleMinus = angleOrig - M_PI/2;
+	
+	Vec2f mouseVelocity = mousePos - mouseLast;
+	perpLength = abs(mouseVelocity.x) + abs(mouseVelocity.y) + 5;
+	
+	lengthValues.push_back(perpLength);
+	
+	if(lengthValues.size() == valAverageCount+1){
+		lengthValues.pop_front();
+		perpLength = 0.0f;
+		for( list<float>::iterator listIterator = lengthValues.begin(); listIterator != lengthValues.end(); ++listIterator ) {
+			float length = *listIterator;
+			perpLength += length;
+		}
+		perpLength /= valAverageCount;
+	}
+	
+	mouseDirPlus = Vec2f( sin(anglePlus), cos(anglePlus) );
+	mouseDirPlus.safeNormalize();
+	mouseDirPlus *= perpLength;
+	
+	mouseDirMinus = Vec2f( sin(angleMinus), cos(angleMinus) );
+	mouseDirMinus.safeNormalize();
+	mouseDirMinus *= perpLength;
+	
+	mouseDir *= 35.0f;
+	vStart = Vec3f(mousePos.x - mouseDir.x, mousePos.y - mouseDir.y, 0.0f);
+	vEnd = Vec3f(mousePos.x, mousePos.y, 0.0f);
+	
+	vEndPlus = Vec3f(mousePos.x + mouseDirPlus.x, mousePos.y + mouseDirPlus.y, 0.0f);
+	vEndMinus = Vec3f(mousePos.x + mouseDirMinus.x, mousePos.y + mouseDirMinus.y, 0.0f);
+	
+	mouseLast = mousePos;
+}
+
+\endcode
+
+\n
+\n
+Finally, we'll call our new function from within our update() function.
+\n
+\n
+\code
+void p5drawingApp::update()
+{	
+	mouseDir = mousePos - mouseLast;
+	if( abs(mouseDir.x) + abs(mouseDir.y) > 2.0f ){
+		
+		//all the code that use to live here has been replaced with just our function call
+		extractPerpendiculars();
+		
+	}
+}
+\endcode
+\n
+\n
+If we build and run our code now, our app will look and function exactly the same as before.  The only difference is our code is a bit more organized.
+\n
+\n
+\section quads Drawing Quads
+Rather than drawing individual lines, instead let's have the app draw strips of color.  We can use the gl Quad Strip function to create a strip of colored 4-sided shapes. Currently we are extracting two perpendicular points with our extractPerpendiculars() function.  Every two frames we'll have 4 points, with which we can draw a quad shape.  Let's start off by changing the names of our variables from vEndPlus and vEndMinus, to vA and vB.  In addition, we'll create vC, vD, and vZero.
+\code
+class p5drawingApp : public AppBasic {
+public:
+	void setup();
+	void update();
+	void draw();
+	void extractPerpendiculars();
+	
+	void mouseDrag(MouseEvent event);
+	void mouseUp(MouseEvent event);
+	void keyDown(KeyEvent event);
+	
+	Vec2f mousePos, mouseLast, mouseDir, mouseDirPlus, mouseDirMinus;
+	Vec3f vStart, vEnd, vA, vB, vC, vD, vZero;  //<-- this line of code was modified
+	list<Vec2f> vectorValues;
+	list<float> lengthValues;
+	int valAverageCount;
+	
+	float angleOrig, anglePlus, angleMinus, perpLength;
+};
+\endcode
+\n
+\n
+Next we'll need to update our extractPerpendiculars() function to reflect our new variable names.
+\n
+\n
+\code
+//these two lines of code in our extractPerpendiculars() function need to get updated.
+//vEndPlus = Vec3f(mousePos.x + mouseDirPlus.x, mousePos.y + mouseDirPlus.y, 0.0f);
+//vEndMinus = Vec3f(mousePos.x + mouseDirMinus.x, mousePos.y + mouseDirMinus.y, 0.0f);
+vA = Vec3f(mousePos.x + mouseDirPlus.x, mousePos.y + mouseDirPlus.y, 0.0f); 	//the variable being assigned got updated to vA
+vB = Vec3f(mousePos.x + mouseDirMinus.x, mousePos.y + mouseDirMinus.y, 0.0f); 	//the variable being assigned got updated to vB
+\endcode
+\n
+\n
+And finally, let's define our new variables in the setup() function:
+\n
+\n
+\code
+void p5drawingApp::setup()
+{       
+	gl::clear( );
+	valAverageCount = 5;
+	vStart, vZero, vA, vB, vC, vD = Vec3f(0.0f, 0.0f, 0.0f); //Here we're assigning zero locations as the initial value of our new variables
+}
+\endcode
+In our first frame of dragging the mouse, we'll only have a set of points (vA and vB), while we'll need two sets of points in order to draw a Quad.  Let's add an if statement so that in every frame after the first frame of dragging the mouse, we simply copy the values from vA and vB into vC and vD at the beginning our our update() function.
+\n
+\n
+\code
+void p5drawingApp::update()
+{	
+	if(vA != vZero && vB != vZero){ //neither of vA or vB are unset, then go ahead and assign vD and vC to their values
+		vD = vA; //note that the four points of a quad go around the perimeter, so vA and vD get linked, and vB and vC get linked
+		vC = vB;
+	}
+	mouseDir = mousePos - mouseLast;
+	if( abs(mouseDir.x) + abs(mouseDir.y) > 2.0f ){
+		extractPerpendiculars(); //after this function runs, vA and vB hold new values, while vC and vD hold the previous values
+	}
+}
+\endcode
+\n
+\n
+And now let's change our draw() loop to draw a quad strip, instead of lines.
+\n
+\n
+\code
+void p5drawingApp::draw()
+{	
+	glLineWidth(perpLength/5);
+	if(vectorValues.size() == valAverageCount){
+		//gl::drawLine(vEndPlus, vEndMinus); <-- this line gets deleted
+		
+		//this block of code creates a quad strip, only when all four points are set.
+		if(vB != vZero && vD != vZero){
+			glBegin(GL_QUADS);
+			glVertex3f(vA.x, vA.y, vA.z);
+			glVertex3f(vB.x, vB.y, vB.z);
+			glVertex3f(vC.x, vC.y, vC.z);
+			glVertex3f(vD.x, vD.y, vD.z);
+			glEnd();
+		}
+	}
+}
+\endcode
+\n
+\n
+Note that when you draw using gl shapes, you first issue the glBegin() function with the type of shape as the argument.  Then you list all of the vertexes that the shape will be drawn from.  And finally you issue the glEnd() command.  This works with a myriad of shape types, all found in the standard open gl documentation.
+\n
+\n
+\image html quad_1.png
+\n
+\n
+
+Next let's improve our app by using a transparent color instead of solid white.  We'll need to add a color and some open gl instructions in our setup() function:
+\n
+\n
+\code
+void p5drawingApp::setup()
+{       
+	gl::clear( );
+	gl::color( ColorAf(0.80f, 0.80f, 1.0f, 0.5f) ); 	// A ColorAf is similar to a Colorf, but adds a fourth argument, alpha, for transparency
+	glEnable (GL_BLEND);								// This line allows open GL to blend for transparency
+	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);	// And this line specifies the type of blending
+	valAverageCount = 5;
+	vStart, vZero, vA, vB, vC, vD = Vec3f(0.0f, 0.0f, 0.0f);
+}
+\endcode
+
+\n
+\n
+Now when we build and run our code, we can see the transparent quads that are being drawn.
+\n
+\n
+\image html quad_2.png
+\n
+\n
+\section oop Adding Objects
+Now that we understand how to draw quads and know the power of object-orientated-programming, let's go ahead and add a custom Quad class to our app so that we can add some more sophisticated effects to our drawings.
+\n
+\n
+Our first step is to create two new files in our project: a Quad.h file in our 'include' folder and a Quad.cpp file in our 'src' folder.  Then let's construct the basics of our new Quad class.
+\n
+\n
+Here's our Quad.h class declaration:
+\n
+\n
+\code
+#pragma once
+#include "cinder/app/AppBasic.h"
+using namespace ci;
+using namespace ci::app;
+using namespace std;
+
+class Quad {
+public:
+	Quad();
+	Quad(Vec3f, Vec3f, Vec3f, Vec3f);
+	void update();
+	void draw();
+	Vec3f mVA, mVB, mVC, mVD;
+	ColorAf mColor;
+};
+\endcode
+\n
+\n
+Here's our Quad.cpp definitions:
+\n
+\n
+\code
+#include "Quad.h"
+#include "cinder/Rand.h"
+#include "cinder/gl/gl.h"
+
+Quad::Quad()
+{
+}
+
+Quad::Quad(Vec3f vA, Vec3f vB, Vec3f vC, Vec3f vD)
+{
+	mVA = vA;
+	mVB = vB;
+	mVC = vC;
+	mVD = vD;
+	mColor = ColorAf(0.8f, 0.8f, 1.0f, 0.5f);
+}
+
+void Quad::draw()
+{
+	gl::color(mColor);
+	glBegin(GL_QUADS);
+	glVertex3f(mVA.x, mVA.y, mVA.z);
+	glVertex3f(mVB.x, mVB.y, mVB.z);
+	glVertex3f(mVC.x, mVC.y, mVC.z);
+	glVertex3f(mVD.x, mVD.y, mVD.z);
+	glEnd();
+}
+
+void Quad::update()
+{
+}
+\endcode
+
+\n
+\n
+Now we have to make some changes to our App.cpp file to integrate our new class.  First let's make sure we're including the class:
+\n
+\n
+\code
+#include "cinder/app/AppBasic.h"
+#include "cinder/gl/gl.h"
+#include<list>
+#include "cinder/CinderMath.h"
+#include "Quad.h" 					//<-- we have to be sure to include this line
+using namespace ci;
+using namespace ci::app;
+using namespace std;
+\endcode
+\n
+\n
+Next, let's declare a list of Quad objects called quads in our App Class.
+\n
+\n
+\code
+class p5drawingApp : public AppBasic {
+public:
+	void setup();
+	void update();
+	void draw();
+	void extractPerpendiculars();
+	
+	void mouseDrag(MouseEvent event);
+	void mouseUp(MouseEvent event);
+	void keyDown(KeyEvent event);
+	
+	Vec2f mousePos, mouseLast, mouseDir, mouseDirPlus, mouseDirMinus;
+	Vec3f vStart, vEnd, vA, vB, vC, vD, vZero; 
+	list<Vec2f> vectorValues;
+	list<float> lengthValues;
+	list<Quad> quads; 							//<-- this new list is getting declared
+	int valAverageCount;
+	
+	float angleOrig, anglePlus, angleMinus, perpLength;
+};
+\endcode
+\n
+\n
+Then let's create new quads inside our update() function:
+
+\n
+\n
+\code
+void p5drawingApp::update()
+{	
+	if(vA != vZero && vB != vZero){
+		vD = vA;
+		vC = vB;
+	}
+	mouseDir = mousePos - mouseLast;
+	if( abs(mouseDir.x) + abs(mouseDir.y) > 2.0f ){
+		extractPerpendiculars();
+	}
+	
+	//below is the code we're adding
+	if(vC != vZero && vD != vZero){  					//if all four vertexes are set . . .
+		if(vectorValues.size() == valAverageCount){   	//and if we have enough values . . .
+			quads.push_back( Quad(vA, vB, vC, vD) );	//create a new Quad and add it to the back of our list
+		}
+	}
+}
+\endcode
+\n
+\n
+And finally, let's iterate through our quads list and draw all the Quads in our draw() loop:
+\n
+\n
+\code
+void p5drawingApp::draw()
+{	
+	//we don't need any of this code, as it is now in our object's draw() function
+	//glLineWidth(perpLength/5);
+	//if(vectorValues.size() == valAverageCount){
+	//	if(vB != vZero && vD != vZero){
+	//		glBegin(GL_QUADS);
+	//		glVertex3f(vA.x, vA.y, vA.z);
+	//		glVertex3f(vB.x, vB.y, vB.z);
+	//		glVertex3f(vC.x, vC.y, vC.z);
+	//		glVertex3f(vD.x, vD.y, vD.z);
+	//		glEnd();
+	//	}
+	//}
+	
+	gl::clear();																	//clear the screen in each frame
+	if( quads.size() > 0 ){															//if there are any quads in our list ...
+		for( list<Quad>::iterator i = quads.begin(); i != quads.end(); ++i ) {  	//iterate through our list....
+			i->draw();																//and draw the quads	
+		}
+	}
+}
+\endcode
+
+\n
+\n
+Now when we build and run our code, we have a nice smooth drawing tool again.  The fact that it is being drawn as objects, rather than as a series of quads in the Frame Buffer doesn't seem to look any different; however, our code is now extremely well organized and follows common coding convention.  In addition, we now have put down the ground work for some even cooler effects.
+\n
+\n
+\image html quad_3.png
+\n
+\n
+\section adding_depth Adding Depth
+To create the illusion that we are not drawing, but are instead releasing a spool of ribbon from a window and then watching the ribbon fall, let's add some 3-dimensional depth to our App.  We'll want the points in our quads to get further away with each frame, and we'll want the transparency to increase as the quads get further to create a sense of "atmospheric perspective."
+\n
+\n
+Let's work within our Quad.cpp update() function to add this functionality.  First, let's simply add a line of code so that the alpha channel gets lighter in each frame.  Let's also set its initial value to be 1.0f rather than 0.5f.
+\n
+\n
+\code
+Quad::Quad(Vec3f vA, Vec3f vB, Vec3f vC, Vec3f vD)
+{
+	mVA = vA;
+	mVB = vB;
+	mVC = vC;
+	mVD = vD;
+	mColor = ColorAf(0.8f, 0.8f, 1.0f, 1.0f); //<-- this line of code got updated, its last value changing from 0.5 to 1.0
+}
+
+void Quad::update()
+{
+	mColor.a *= 0.992f;  //<-- this line of code will make the alpha channel slightly more transparent with each frame
+}
+\endcode
+\n
+\n
+Next let's make sure that our list of Quads gets updated with each frame.
+\n
+\n
+\code
+void p5drawingApp::update()
+{	
+	if(vA != vZero && vB != vZero){
+		vD = vA;
+		vC = vB;
+	}
+	mouseDir = mousePos - mouseLast;
+	if( abs(mouseDir.x) + abs(mouseDir.y) > 2.0f ){
+		extractPerpendiculars();
+	}
+	if(vC != vZero && vD != vZero){
+		
+		if( quads.size() > 0 ){															//if there's more than one quad in our list...
+			for( list<Quad>::iterator i = quads.begin(); i != quads.end(); ++i ) {		//iterate through the list...
+				i->update();															//and update each list entry
+			}
+		}
+		
+		if(vectorValues.size() == valAverageCount){
+			quads.push_back( Quad(vA, vB, vC, vD) );
+		}
+	}
+}
+\endcode
+\n
+\n
+Now when we build and run our code, we can see that time is a factor in our drawing, and that every quad in the drawing is slowly disappearing as time passes.
+\n
+\n
+\image html quad_4.png
+\n
+\n
+Now we no longer need our key event listener, as there's no need to clear the screen.  Let's delete the keyDown() function from our App Class and also delete its definition block of code.
+\n
+\n
+Now let's go crazy and really push things by making our vertexes get further away with time.  We can simply add some more code to our Quads.cpp update() function.\n
+\n
+\code
+void Quad::update()
+{
+	mColor.a *= 0.992f;
+	mVA.z = mVA.z * 1.01f - 0.5f; //make the z-value smaller with each frame for vertex A
+	mVB.z = mVB.z * 1.01f - 0.5f; //for vertex B
+	mVC.z = mVC.z * 1.01f - 0.5f; //for vertex C
+	mVD.z = mVD.z * 1.01f - 0.5f; //for vertex D
+}
+\endcode
+\n
+\n
+Now we have a really cool effect within our drawing app which simulates throwing a silk ribbon out of a window.
+\n
+\n
+\image html quad_5.png
+\n
+\n
+\section elimination Eliminating Unneeded Objects
+If we were to play with our app for several minutes, we'd have a lot of objects in our list.  Perhaps so many that it would begin to bog our app down, keeping track of objects that we can't even see any more.  This is a common situation, with a simple solution.  Let's add a boolean variable called 'die' and when our object is no longer visible, let's set 'die' to be true.  Then we can simply run an iterator that eliminates all the objects that are ready to die.
+\n
+\n
+First let's declare and define our die variable in both the Quad.h and Quad.cpp files, respectively.
+\n
+\n
+\code
+class Quad {
+public:
+	Quad();
+	Quad(Vec3f, Vec3f, Vec3f, Vec3f, float);
+	void update();
+	void draw();
+	Vec3f mVA, mVB, mVC, mVD, mDiffAB_CD;
+	float mDistLength, mLineweight, mAlpha;
+	ColorAf mColor1, mColor2;
+	bool mDie;  //<-- this line got added
+};
+
+Quad::Quad(Vec3f vA, Vec3f vB, Vec3f vC, Vec3f vD)
+{
+	mVA = vA;
+	mVB = vB;
+	mVC = vC;
+	mVD = vD;
+	mColor = ColorAf(0.8f, 0.8f, 1.0f, 1.0f);
+	mDie = false;  //<-- this line got added
+}
+\endcode
+
+\n
+\n
+Next we'll need to add some code to our Quad.cpp update() function:
+\n
+\n
+\code
+void Quad::update()
+{
+	mColor.a *= 0.992f;
+	mVA.z = mVA.z * 1.01f - 0.5f;
+	mVB.z = mVB.z * 1.01f - 0.5f;
+	mVC.z = mVC.z * 1.01f - 0.5f;
+	mVD.z = mVD.z * 1.01f - 0.5f;
+	
+	if(mColor.a < 0.0001f){			//if the alpha value gets really close to zero
+		mDie = true;					//prepare it to be eliminated
+	}
+}
+\endcode
+\n
+\n
+Finally we'll need to add to the update() function in our App.cpp file to eliminate any objects ready to die:
+\n
+\n
+\code
+void p5drawingApp::update()
+{	
+	if(vA != vZero && vB != vZero){
+		vD = vA;
+		vC = vB;
+	}
+	mouseDir = mousePos - mouseLast;
+	if( abs(mouseDir.x) + abs(mouseDir.y) > 2.0f ){
+		extractPerpendiculars();
+	}
+	if(vC != vZero && vD != vZero){
+		if( quads.size() > 0 ){
+			for( list<Quad>::iterator i = quads.begin(); i != quads.end(); ++i ) {
+				i->update();
+				if( i->mDie ){							//<-- if die is true...
+					i = quads.erase( i );				//<-- erase the object from the list
+				}
+			}
+		}
+		if(vectorValues.size() == valAverageCount){
+			quads.push_back( Quad(vA, vB, vC, vD) );
+		}
+	}
+}
+\endcode
+\n
+\n
+Now at any given moment in our App's running time, there will never be an unmanageable number of objects to keep track off.  This is a good practice to observe.
+\section wrapup Wrapup
+Here's all the final code for this lesson:
+\n
+\n
+\code
+/*//////////////////////////////////////////////////////////////////////////////////////*/
+/*//////////////////////////////Code from the App.cpp file//////////////////////////////*/
+/*//////////////////////////////////////////////////////////////////////////////////////*/
+#include "cinder/app/AppBasic.h"
+#include "cinder/gl/gl.h"
+#include<list>
+#include "cinder/CinderMath.h"
+#include "Quad.h"
+using namespace ci;
+using namespace ci::app;
+using namespace std;
+
+class p5drawingApp : public AppBasic {
+public:
+	void setup();
+	void update();
+	void draw();
+	void extractPerpendiculars();
+	
+	void mouseDrag(MouseEvent event);
+	void mouseUp(MouseEvent event);
+	
+	Vec2f mousePos, mouseLast, mouseDir, mouseDirPlus, mouseDirMinus;
+	Vec3f vStart, vEnd, vA, vB, vC, vD, vZero; 
+	list<Vec2f> vectorValues;
+	list<float> lengthValues;
+	list<Quad> quads; //new list
+	int valAverageCount;
+	
+	float angleOrig, anglePlus, angleMinus, perpLength;
+};
+
+void p5drawingApp::mouseUp(MouseEvent event)
+{
+	vectorValues.clear();
+	lengthValues.clear();
+	
+}
+
+void p5drawingApp::mouseDrag(MouseEvent event)
+{
+	mousePos = event.getPos();
+}
+
+void p5drawingApp::setup()
+{       
+	gl::clear( );
+	gl::color( ColorAf(0.80f, 0.80f, 1.0f, 0.5f) );
+	glEnable (GL_BLEND);
+	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	valAverageCount = 5;
+	vStart, vZero, vA, vB, vC, vD = Vec3f(0.0f, 0.0f, 0.0f);
+}
+
+void p5drawingApp::update()
+{	
+	if(vA != vZero && vB != vZero){
+		vD = vA;
+		vC = vB;
+	}
+	mouseDir = mousePos - mouseLast;
+	if( abs(mouseDir.x) + abs(mouseDir.y) > 2.0f ){
+		extractPerpendiculars();
+	}
+	if(vC != vZero && vD != vZero){
+		if( quads.size() > 0 ){
+			for( list<Quad>::iterator i = quads.begin(); i != quads.end(); ++i ) {
+				i->update();
+				if( i->mDie ){
+					i = quads.erase( i );
+				}
+			}
+		}
+		if(vectorValues.size() == valAverageCount){
+			quads.push_back( Quad(vA, vB, vC, vD) );
+		}
+	}
+}
+
+void p5drawingApp::draw()
+{	
+	gl::clear();
+	if( quads.size() > 0 ){
+		for( list<Quad>::iterator i = quads.begin(); i != quads.end(); ++i ) {
+			i->draw();
+		}
+	}
+}
+
+void p5drawingApp::extractPerpendiculars()
+{
+	mouseDir.safeNormalize();
+	
+	vectorValues.push_back(mouseDir);
+	
+	if(vectorValues.size() == valAverageCount+1){
+		
+		vectorValues.pop_front();
+		mouseDir = Vec2f(0.0f, 0.0f);
+		for( list<Vec2f>::iterator listIterator = vectorValues.begin(); listIterator != vectorValues.end(); ++listIterator ) {
+			Vec2f vec = Vec2f(listIterator->x, listIterator->y);
+			mouseDir += vec;
+		}
+		
+		mouseDir /= valAverageCount;
+	}
+	
+	angleOrig = math<float>::atan2(mouseDir.x, mouseDir.y);    
+	anglePlus = angleOrig + M_PI/2;
+	angleMinus = angleOrig - M_PI/2;
+	
+	Vec2f mouseVelocity = mousePos - mouseLast;
+	perpLength = abs(mouseVelocity.x) + abs(mouseVelocity.y) + 5;
+	
+	lengthValues.push_back(perpLength);
+	
+	if(lengthValues.size() == valAverageCount+1){
+		lengthValues.pop_front();
+		perpLength = 0.0f;
+		for( list<float>::iterator listIterator = lengthValues.begin(); listIterator != lengthValues.end(); ++listIterator ) {
+			float length = *listIterator;
+			perpLength += length;
+		}
+		perpLength /= valAverageCount;
+	}
+	
+	mouseDirPlus = Vec2f( sin(anglePlus), cos(anglePlus) );
+	mouseDirPlus.safeNormalize();
+	mouseDirPlus *= perpLength;
+	
+	mouseDirMinus = Vec2f( sin(angleMinus), cos(angleMinus) );
+	mouseDirMinus.safeNormalize();
+	mouseDirMinus *= perpLength;
+	
+	mouseDir *= 35.0f;
+	vStart = Vec3f(mousePos.x - mouseDir.x, mousePos.y - mouseDir.y, 0.0f);
+	vEnd = Vec3f(mousePos.x, mousePos.y, 0.0f);
+	
+	vA = Vec3f(mousePos.x + mouseDirPlus.x, mousePos.y + mouseDirPlus.y, 0.0f);
+	vB = Vec3f(mousePos.x + mouseDirMinus.x, mousePos.y + mouseDirMinus.y, 0.0f);
+	
+	mouseLast = mousePos;
+}
+
+CINDER_APP_BASIC( p5drawingApp, RendererGl ) 
+
+/*//////////////////////////////////////////////////////////////////////////////////////*/
+/*//////////////////////////////Code from the Quad.h/ file//////////////////////////////*/
+/*//////////////////////////////////////////////////////////////////////////////////////*/
+#pragma once
+#include "cinder/app/AppBasic.h"
+using namespace ci;
+using namespace ci::app;
+using namespace std;
+
+class Quad {
+public:
+	Quad();
+	Quad(Vec3f, Vec3f, Vec3f, Vec3f);
+	void update();
+	void draw();
+	Vec3f mVA, mVB, mVC, mVD;
+	ColorAf mColor;
+	bool mDie;
+};
+
+/*//////////////////////////////////////////////////////////////////////////////////////*/
+/*/////////////////////////////Code from the Quad.cpp/ file/////////////////////////////*/
+/*//////////////////////////////////////////////////////////////////////////////////////*/
+#include "Quad.h"
+#include "cinder/Rand.h"
+#include "cinder/gl/gl.h"
+
+Quad::Quad()
+{
+}
+
+Quad::Quad(Vec3f vA, Vec3f vB, Vec3f vC, Vec3f vD)
+{
+	mVA = vA;
+	mVB = vB;
+	mVC = vC;
+	mVD = vD;
+	mColor = ColorAf(0.8f, 0.8f, 1.0f, 1.0f);
+	mDie = false;
+}
+
+void Quad::draw()
+{
+	gl::color(mColor);
+	glBegin(GL_QUADS);
+	glVertex3f(mVA.x, mVA.y, mVA.z);
+	glVertex3f(mVB.x, mVB.y, mVB.z);
+	glVertex3f(mVC.x, mVC.y, mVC.z);
+	glVertex3f(mVD.x, mVD.y, mVD.z);
+	glEnd();
+}
+
+void Quad::update()
+{
+	mColor.a *= 0.992f;
+	mVA.z = mVA.z * 1.01f - 0.5f;
+	mVB.z = mVB.z * 1.01f - 0.5f;
+	mVC.z = mVC.z * 1.01f - 0.5f;
+	mVD.z = mVD.z * 1.01f - 0.5f;
+	
+	if(mColor.a < 0.0001f){
+		mDie = true;
+	}
+}
+\endcode
+
+
+\section in_closing In Closing
+Congratulations!!! You are now well on your way to being an awesome, confident Cinder user!  You should not only feel at ease working with the syntax, structure, and style of Cinder, but you should feel comfortable combining the available tools together to make some great applications!  Now go on and make some cool projects of your own!!!
+*/

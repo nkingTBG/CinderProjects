@@ -1,0 +1,400 @@
+/*! \page basic_drawing4 P5toCI - Basic Drawing 4
+<h1>P5 to CI - Basic Drawing 4</h1>
+\section overview Overview
+Now that we feel comfortable working with vectors and using lists to store our data, let's take all the code from our last lesson and actuality apply it to a drawing application.
+\section draw_lines Drawing Lines
+Instead of simply visualizing the vectors we've calculated, let's draw lines in between the points to make a cool calligraphy brush drawing program.  First let's clear out our draw() loop, and replace the drawVector functions with a simple glLine() function.  Also, let's set the line width change along with the line length, based on mouse velocity.
+
+\code
+void p5drawingApp::draw()
+{
+	gl::clear( );
+	glLineWidth(perpLength/5);         //this will make the line thicker when the mouse moves faster
+	gl::drawLine(vEndPlus, vEndMinus); //this simply draws a line between two points
+}
+\endcode
+
+Just like we did in our last drawing program, let's move our gl::clear() function into the setup() loop, and let's add a key event listener so we can clear the screen when we press the space bar.  Also, we should change our mouseMove function to be a mouseDrag function instead.
+
+\code
+class p5drawingApp : public AppBasic {
+public:
+	void setup();
+	void update();
+	void draw();
+	
+	void mouseDrag(MouseEvent event);  //here we are changing from a mouseMove to a mouseDrag
+	void keyDown(KeyEvent event);      //and we're adding in a keyDown listener
+	
+	Vec2f mousePos, mouseLast, mouseDir, mouseDirPlus, mouseDirMinus;
+	Vec3f vStart, vEnd, vEndPlus, vEndMinus;
+	float vWidth, vRadius;
+	list<Vec2f> vectorValues;
+	list<float> lengthValues;
+	int valAverageCount;
+	
+	float angleOrig, anglePlus, angleMinus, perpLength;
+};
+
+void p5drawingApp::keyDown(KeyEvent event)
+{
+	if( event.getChar() == ' ' ){                  //when the space bar is pressed, clear the screen
+        gl::clear();
+    }
+}
+
+void p5drawingApp::mouseDrag(MouseEvent event)      //remember to change this from mouseMove to mouseDrag
+{
+	mousePos = event.getPos();
+}
+
+void p5drawingApp::setup()
+{	
+	gl::clear( ); 
+	valAverageCount = 8;
+	vStart = Vec3f(0.0f, 0.0f, 0.0f);
+	vWidth = 15.0f;
+	vRadius = 5.0f;
+	for(int i = 0; i < valAverageCount-1; i++){
+		vectorValues.push_back( Vec2f(0.0f, 0.0f) );
+	}
+	for(int i = 0; i < valAverageCount-1; i++){
+		lengthValues.push_back( 5.0f);
+	}
+}\endcode
+
+\n
+\n
+\image html linesDraw1.png
+\n
+\n
+
+\section optimizations Optimizations
+
+Our drawing app is starting to look pretty cool, but you might have noticed it has a few problems.  When we let go of our mouse and then drag our mouse again somewhere else, the numbers it is averaging aren't starting from a clean slate; instead they are continuing where they left off, causing our first few strokes to be at the wrong angle and width.  To fix this, let's clear the contents of our list every time the mouse button is lifted, and let's only draw a line after enough new values have been recorded.\n
+\n
+First let's add a mouseUp event listener:
+
+\code
+class p5drawingApp : public AppBasic {
+public:
+	void setup();
+	void update();
+	void draw();
+	
+	void mouseDrag(MouseEvent event);
+	void mouseUp(MouseEvent event);        //let's declare our mouseUp event listener
+	void keyDown(KeyEvent event);
+	
+	Vec2f mousePos, mouseLast, mouseDir, mouseDirPlus, mouseDirMinus;
+	Vec3f vStart, vEnd, vEndPlus, vEndMinus;
+	float vWidth, vRadius;
+	list<Vec2f> vectorValues;
+	list<float> lengthValues;
+	int valAverageCount;
+	
+	float angleOrig, anglePlus, angleMinus, perpLength;
+};
+
+void p5drawingApp::mouseUp(MouseEvent event)   //when the mouse is released, call this function
+{
+	vectorValues.clear();      //delete all the values in the vectorValues list
+	lengthValues.clear();      //delete all the values in the lengthValues list
+
+}
+\endcode
+
+And next, let's remove all the code in the setup() function where we pre-load our lists with initial values.  Instead, let's write some if statements in our update() function that account for whether we have enough values to average, or whether we're still building up our lists.
+
+\code
+void p5drawingApp::setup()
+{       
+	gl::clear( );
+	valAverageCount = 5; 
+    vStart = Vec3f(0.0f, 0.0f, 0.0f);
+	vWidth = 15.0f;
+	vRadius = 5.0f;
+	
+	//all of the below commented lines should get deleted:
+	/*
+	for(int i = 0; i < valAverageCount-1; i++){
+		vectorValues.push_back( Vec2f(0.0f, 0.0f) );
+	}
+	for(int i = 0; i < valAverageCount-1; i++){
+		lengthValues.push_back( 5.0f);
+	}
+	*/
+}
+
+void p5drawingApp::update()
+{
+	mouseDir = mousePos - mouseLast;
+	if( abs(mouseDir.x) + abs(mouseDir.y) > 2.0f ){
+		mouseDir.safeNormalize();
+		
+		vectorValues.push_back(mouseDir); //take the current mouseDir vector and push it in our list
+		
+		if(vectorValues.size() == valAverageCount+1){ //if now our list has enough values to find average, proceed
+			
+			vectorValues.pop_front();     //drop the first value to keep the list length at its target size
+			mouseDir = Vec2f(0.0f, 0.0f);    //zero out the starting value
+			//iterate through all the values and add them to eachother
+			for( list<Vec2f>::iterator listIterator = vectorValues.begin(); listIterator != vectorValues.end(); ++listIterator ) {
+				Vec2f vec = Vec2f(listIterator->x, listIterator->y);
+				mouseDir += vec;
+			}
+			
+			mouseDir /= valAverageCount;  //divide all the values by the number of values
+		}
+		
+		angleOrig = math<float>::atan2(mouseDir.x, mouseDir.y);    
+		anglePlus = angleOrig + M_PI/2;
+		angleMinus = angleOrig - M_PI/2;
+		
+		Vec2f mouseVelocity = mousePos - mouseLast;
+		perpLength = abs(mouseVelocity.x) + abs(mouseVelocity.y) + 5;
+		
+		lengthValues.push_back(perpLength); //same as above: take the current length and push it in our list
+		
+		if(lengthValues.size() == valAverageCount+1){   //if now our list has enough values to find average, proceed
+			
+			lengthValues.pop_front();         //drop the first value to keep the list length at its target size
+			perpLength = 0.0f;   //zero out the starting value
+			//iterate through all the values and add them to eachother
+			for( list<float>::iterator listIterator = lengthValues.begin(); listIterator != lengthValues.end(); ++listIterator ) {
+				float length = *listIterator;
+				perpLength += length;
+			}
+			perpLength /= valAverageCount;    //divide all the values by the number of values
+			
+		}
+		
+		mouseDirPlus = Vec2f( sin(anglePlus), cos(anglePlus) );
+		mouseDirPlus.safeNormalize();
+		mouseDirPlus *= perpLength;
+		
+		mouseDirMinus = Vec2f( sin(angleMinus), cos(angleMinus) );
+		mouseDirMinus.safeNormalize();
+		mouseDirMinus *= perpLength;
+		
+		mouseDir *= 35.0f;
+		vStart = Vec3f(mousePos.x - mouseDir.x, mousePos.y - mouseDir.y, 0.0f);
+		vEnd = Vec3f(mousePos.x, mousePos.y, 0.0f);
+		
+		vEndPlus = Vec3f(mousePos.x + mouseDirPlus.x, mousePos.y + mouseDirPlus.y, 0.0f);
+		vEndMinus = Vec3f(mousePos.x + mouseDirMinus.x, mousePos.y + mouseDirMinus.y, 0.0f);
+		
+		mouseLast = mousePos;
+		
+		//vectorValues.pop_front();  <-- this got moved inside the above if statement, so this can now get deleted
+		//lengthValues.pop_front();  <-- same for this one.
+	}
+}
+\endcode
+Finally, let's add an if statement in our draw() loop so that it only draws lines when there are enough list values to get an average:
+\code
+void p5drawingApp::draw()
+{	
+	glLineWidth(perpLength/5);
+	if(vectorValues.size() == valAverageCount){    //if the list size is big enough, draw the line
+		gl::drawLine(vEndPlus, vEndMinus);     
+	}
+}
+\endcode
+What we have now is an awesome drawing app that beautifully draws lines to match the direction and speed of our mouse.
+\n
+\n
+\image html linesDraw2bwOptimized.png
+\n
+\n
+\section adding_color Adding Color
+Just like we did in our last lesson, let's add color back into our sketch to spice things up.
+\code
+#include "cinder/app/AppBasic.h"
+#include "cinder/gl/gl.h"
+#include<list>
+#include "cinder/CinderMath.h"
+#include "cinder/Rand.h"    //<-- We'll need to include our Random library
+using namespace ci;
+using namespace ci::app;
+using namespace std;
+
+class p5drawingApp : public AppBasic {
+public:
+	void setup();
+	void update();
+	void draw();
+	
+	void mouseDrag(MouseEvent event);
+	void mouseUp(MouseEvent event);
+	void keyDown(KeyEvent event);
+	
+	Vec2f mousePos, mouseLast, mouseDir, mouseDirPlus, mouseDirMinus;
+	Vec3f vStart, vEnd, vEndPlus, vEndMinus; 
+	float vWidth, vRadius;
+	list<Vec2f> vectorValues;
+	list<float> lengthValues;
+	int valAverageCount;
+	
+	float angleOrig, anglePlus, angleMinus, perpLength;
+	Colorf color;			//<--And we'll need a variable to store our color values
+};
+\endcode
+Let's define a new random color in each frame using the update() function:
+\code
+    //just add these 3 lines of code at the top of our update() function, above all of our other calculations
+    color.r = Rand::randFloat();
+	color.g = Rand::randFloat();
+	color.b = Rand::randFloat();
+\endcode
+And let's set the color before we draw each line:
+\code
+void p5drawingApp::draw()
+{	
+	glLineWidth(perpLength/5);
+	gl::color( color );     //this line will set the color in each frame
+	if(vectorValues.size() == valAverageCount){
+		gl::drawLine(vEndPlus, vEndMinus);
+	}
+}
+\endcode
+\image html cinder_painting7.png;
+\section wrap_up Wrap Up
+Using lists and trigonometry we've really stepped up our game, making a drawing application that is far more interesting than simple drawing circles to the screen.\n
+\n
+Here is all the final code:
+\code
+#include "cinder/app/AppBasic.h"
+#include "cinder/gl/gl.h"
+#include<list>
+#include "cinder/CinderMath.h"
+#include "cinder/Rand.h"
+using namespace ci;
+using namespace ci::app;
+using namespace std;
+
+class p5drawingApp : public AppBasic {
+public:
+	void setup();
+	void update();
+	void draw();
+	
+	void mouseDrag(MouseEvent event);
+	void mouseUp(MouseEvent event);
+	void keyDown(KeyEvent event);
+	
+	Vec2f mousePos, mouseLast, mouseDir, mouseDirPlus, mouseDirMinus;
+	Vec3f vStart, vEnd, vEndPlus, vEndMinus; 
+	float vWidth, vRadius;
+	list<Vec2f> vectorValues;
+	list<float> lengthValues;
+	int valAverageCount;
+	
+	float angleOrig, anglePlus, angleMinus, perpLength;
+	Colorf color;
+};
+
+void p5drawingApp::mouseUp(MouseEvent event)
+{
+	vectorValues.clear();
+	lengthValues.clear();
+	
+}
+
+void p5drawingApp::keyDown(KeyEvent event)
+{
+	if( event.getChar() == ' ' ){
+        gl::clear();
+    }
+}
+
+void p5drawingApp::mouseDrag(MouseEvent event)
+{
+	mousePos = event.getPos();
+}
+
+void p5drawingApp::setup()
+{       
+	gl::clear( );
+	valAverageCount = 5;
+	vStart = Vec3f(0.0f, 0.0f, 0.0f);
+	vWidth = 15.0f;
+	vRadius = 5.0f;
+}
+
+void p5drawingApp::update()
+{	
+    color.r = Rand::randFloat();
+	color.g = Rand::randFloat();
+	color.b = Rand::randFloat();
+	
+	mouseDir = mousePos - mouseLast;
+	if( abs(mouseDir.x) + abs(mouseDir.y) > 2.0f ){
+		mouseDir.safeNormalize();
+		
+		vectorValues.push_back(mouseDir);
+		
+		if(vectorValues.size() == valAverageCount+1){
+			
+			vectorValues.pop_front();
+			mouseDir = Vec2f(0.0f, 0.0f);
+			for( list<Vec2f>::iterator listIterator = vectorValues.begin(); listIterator != vectorValues.end(); ++listIterator ) {
+				Vec2f vec = Vec2f(listIterator->x, listIterator->y);
+				mouseDir += vec;
+			}
+			
+			mouseDir /= valAverageCount;
+		}
+		
+		angleOrig = math<float>::atan2(mouseDir.x, mouseDir.y);    
+		anglePlus = angleOrig + M_PI/2;
+		angleMinus = angleOrig - M_PI/2;
+		
+		Vec2f mouseVelocity = mousePos - mouseLast;
+		perpLength = abs(mouseVelocity.x) + abs(mouseVelocity.y) + 5;
+		
+		lengthValues.push_back(perpLength);
+		
+		if(lengthValues.size() == valAverageCount+1){
+			lengthValues.pop_front();
+			perpLength = 0.0f;
+			for( list<float>::iterator listIterator = lengthValues.begin(); listIterator != lengthValues.end(); ++listIterator ) {
+				float length = *listIterator;
+				perpLength += length;
+			}
+			perpLength /= valAverageCount;
+		}
+		
+		mouseDirPlus = Vec2f( sin(anglePlus), cos(anglePlus) );
+		mouseDirPlus.safeNormalize();
+		mouseDirPlus *= perpLength;
+		
+		mouseDirMinus = Vec2f( sin(angleMinus), cos(angleMinus) );
+		mouseDirMinus.safeNormalize();
+		mouseDirMinus *= perpLength;
+		
+		mouseDir *= 35.0f;
+		vStart = Vec3f(mousePos.x - mouseDir.x, mousePos.y - mouseDir.y, 0.0f);
+		vEnd = Vec3f(mousePos.x, mousePos.y, 0.0f);
+		
+		vEndPlus = Vec3f(mousePos.x + mouseDirPlus.x, mousePos.y + mouseDirPlus.y, 0.0f);
+		vEndMinus = Vec3f(mousePos.x + mouseDirMinus.x, mousePos.y + mouseDirMinus.y, 0.0f);
+		
+		mouseLast = mousePos;
+	}
+}
+
+void p5drawingApp::draw()
+{	
+	glLineWidth(perpLength/5);
+	gl::color( color );
+	if(vectorValues.size() == valAverageCount){
+		gl::drawLine(vEndPlus, vEndMinus);
+	}
+}
+
+CINDER_APP_BASIC( p5drawingApp, RendererGl ) 
+\endcode
+
+Now that we are making some cool drawings with our app, let's learn about how to turn our drawing elements into objects, and have even more control over what they look like on the screen.  In our next lesson \ref basic_drawing5 "basic drawing 5", we'll do this and more.
+*/

@@ -1,0 +1,166 @@
+/*! \page cinder_app_basics P5toCI - Cinder App Basics
+\section blankSlate Clean Start
+When you first create a sketch in Processing, you have an entirely empty file.  In Cinder, creating a file from scratch is not such an easy thing, so the best way to get started is to use the <a  href="http://libcinder.org/welcome/MacSetup.html#tinderbox">TinderBox</a> application to build a new project for you.  Once you open this new project and focus on the primary .cpp file, you'll notice that the file is not a blank slate, but instead is prewritten with a very simple drawing application.\n
+\code
+#include "cinder/app/AppBasic.h"
+#include <list>
+using namespace ci;
+using namespace ci::app;
+using namespace std;
+
+// We'll create a new Cinder Application by deriving from the AppBasic class
+class p5drawingApp : public AppBasic {
+ public:
+	// Cinder will always call this function whenever the user drags the mouse
+	void mouseDrag( MouseEvent event );
+	// Cinder calls this function 30 times per second by default
+	void draw();
+	
+	// This will maintain a list of points which we will draw line segments between
+	list<Vec2f>		mPoints;
+};
+
+void p5drawingApp::mouseDrag( MouseEvent event )
+{
+	// add wherever the user drags to the end of our list of points
+	mPoints.push_back( event.getPos() );
+}
+
+void p5drawingApp::draw()
+{
+	gl::clear( Color( 0.1f, 0.1f, 0.1f ) );
+
+	// We'll set the color to an orange color
+	glColor3f( 1.0f, 0.5f, 0.25f );
+	
+	// now tell OpenGL we've got a series of points it should draw lines between
+	glBegin( GL_LINE_STRIP );
+	// iterate across our list of points, and pass each one to OpenGL
+	for( list<Vec2f>::iterator pointIter = mPoints.begin(); pointIter != mPoints.end(); ++pointIter ) {
+		glVertex2f( pointIter->x, pointIter->y );
+	}
+	// tell OpenGL to actually draw the lines now
+	glEnd();
+}
+
+// This line tells Cinder to actually create the application
+CINDER_APP_BASIC( p5drawingApp, RendererGl )
+\endcode
+Our first step is to edit this starting code to give us a clean start.  Let's begin by deleting everything except for the bare essentials of a Cinder app.\n
+\code
+#include "cinder/app/AppBasic.h"
+using namespace ci;
+using namespace ci::app;
+using namespace std;
+
+class p5drawingApp : public AppBasic {
+public:
+	void draw();
+};
+
+void p5drawingApp::draw()
+{
+	gl::clear( );
+}
+
+CINDER_APP_BASIC( p5drawingApp, RendererGl )
+\endcode
+The remaining code is all that is necessary for our Cinder App to run, although you'll find that all it produces is a blank, black screen.  Before we move forward and add back in additional code to make our own drawing app, let's take a brief look at the basic structure of our program.\n
+
+\section leadingBlock Leading Block of Code
+
+\code
+#include "cinder/app/AppBasic.h"
+using namespace ci;
+using namespace ci::app;
+using namespace std;
+\endcode
+
+The top block of code is where we include other files whose code we wish to use.  (Remember, Cinder is essentially just that: a huge library of code that you can use bits of to rapidly development great programs, without having to write it all from scratch).  Any statement that leads with a '#' character is written for the pre-processor, and will be run before compiling.  Note that this is identical to how you would include a library in Processing.\n
+\n
+In addition to any pre-processor instructions, this top section of code also declares namespaces.  Rather than writing out complete paths to Cinder resources, like <em>cinder::app::getWindowSize()</em>, instead you can declare a namespace, like ci::app, and then later call the getWindowSize function simply by typing <em>getWindowSize()</em>.  This is just for your own convenience.
+\n
+
+\section appClass App Class
+
+\code
+class p5drawingApp : public AppBasic {
+public:
+	void draw();
+};
+\endcode
+
+The App Class is where we declare all the resources we intend to use in our program.  Any functions or global variables we wish to use must be declared here.\n
+\n
+When declaring a function, you must list its return type, its name, and its argument datatypes.  A function declaration of <em>void draw(int, float)</em> would cause the program to expect a function, 'draw', to take an int and float as its arguments and return nothing (void).  Later on in the program you could flesh out all the details of the function.\n
+\n
+When declaring a variable, you must list its datatype and name.  A variable declaration of <em>float diameter</em> would cause the program to expect a variable, 'diameter', with a datatype of float.\n
+\n
+I like to think of this as the cast of characters being listed out before a director begins to run a play.  Because the compiler doesn't want any surprise guests, everyone involved just needs to be named from the onset.\n
+
+\section everythingElse Everything Else
+
+\code
+void p5drawingApp::draw()
+{
+	gl::clear( );
+}
+\endcode
+
+The rest of your code goes into the next part of the program.  This is where you flesh out all of your functions, perform calculations, and whatever else your program does.\n
+\n
+Here you are naming each function a second time, but this time you are <em>defining</em> the functions, while the first time you were <em>declaring</em> them.  Note that the initial declaration of a function is commonly referred to as the 'prototype,' as it outlines the structure and components of each function.\n
+\n
+When we type <em>void p5drawingApp::draw()</em> we are declaring a function called 'draw', which is within the scope of the p5drawingApp class, which takes no arguments, and returns nothing (void).  Each time the draw() function is called, we are calling the gl::clear function, which fills in the background of the screen to black.  This is identical to the background() function in Processing.\n
+\n
+Note that the draw function is a loop, just like the draw loop in Processing, so it gets called with every frame of our program running.  By default, this is 30 times per second.
+
+\section renderer Rendering the Screen
+
+\code
+CINDER_APP_BASIC( p5drawingApp, RendererGl )
+\endcode
+
+You may have noticed that this final line of code looks a little different.  Similar to our first few lines of code at the top of our file, these are instructions for the pre-processor.  Essentially, this line of code instructs Cinder to run our application.  In this particular program, we are rendering using the GL renderer, but there are other options available, like the 2D Cairo renderer.  More on that in future lessons.
+
+\section finishingTouches Finishing Touches
+
+Before we move forward and begin authoring our own application, we should add a few more lines of code to finish creating our program template.
+
+The three basic functions of a Cinder application are setup(), update(), and draw().  The setup() function is called once at the beginning of the program, and can be used to assign initial values to variables and perform other opening actions.  The update() function is a loop and gets called with each frame of the program running.  It should be used for performing calculations and manipulation of variables and data.  The draw() function, as mentioned earlier, is also a loop that gets called each frame and should contain all of the code for drawing objects to the screen.  In some situations, like when a user resizes the application window, the draw() function might get called several times faster than the app's framerate.  Again, this is why all of the variable manipulation get placed separately in the update() function, to optimize for performance and to prevent unnecessary calculation.\n
+\n
+Our final code should look like this: 
+\code
+#include "cinder/app/AppBasic.h"
+using namespace ci;
+using namespace ci::app;
+using namespace std;
+
+class p5drawingApp : public AppBasic {
+public:
+	void setup();
+	void update();
+	void draw();
+};
+
+void p5drawingApp::setup()
+{
+}
+
+void p5drawingApp::update()
+{
+}
+
+void p5drawingApp::draw()
+{
+	gl::clear( );
+}
+
+CINDER_APP_BASIC( p5drawingApp, RendererGl )
+\endcode
+
+Note that we declared the setup() and update() functions in the App Class as "prototypes", in addition to defining each function separately in its own block of code further down in our program.  The fact that there are no instructions inside either function doesn't change the fact that we need to both declare and define them.  Although we are not yet using these functions in our basic template, they're still included so that we can easily use them in the future.
+
+\section wrapUp Wrap Up
+Now that we have a program template to work with, as well as a basic understanding of the various parts of the program, let's continue on to the next lesson on \ref basic_drawing1 "basic drawing 1".
+*/

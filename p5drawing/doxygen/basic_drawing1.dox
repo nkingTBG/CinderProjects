@@ -1,0 +1,356 @@
+/*! \page basic_drawing1 P5toCI - Basic Drawing 1
+<h1>P5 to CI - Basic Drawing 1</h1>
+\section template Using the Program Template
+After saving our program template in the previous lesson, we can duplicate the entire project folder to create a new project with all the same contents.  This is effectively the same as doing a 'save as' in Processing.  Keep in mind that using 'save as' in Xcode will only rename the current file, not the entire project folder.\n
+\n
+To review, the project template should look like this: 
+\code
+#include "cinder/app/AppBasic.h"
+using namespace ci;
+using namespace ci::app;
+using namespace std;
+
+class p5drawingApp : public AppBasic {
+public:
+	void setup();
+	void update();
+	void draw();
+};
+
+void p5drawingApp::setup()
+{
+}
+
+void p5drawingApp::update()
+{
+}
+
+void p5drawingApp::draw()
+{
+	gl::clear( );
+}
+
+CINDER_APP_BASIC( p5drawingApp, RendererGl )
+\endcode
+
+If you click the 'build and run' button in xcode, your program will compile and run, opening up a separate window (you should just see an all black screen).  Processing usually compiles and runs a sketch within a second or two, but Xcode will likely take 30 seconds or more.  Although this delay can be frustrating, it's worth the wait, because you are building an entire stand-alone OSX application with each click of the button.\n
+\n
+As you are working to develop a Cinder application, you should consider yourself to be a scientist in the laboratory, making small incremental changes to test out your ideas, and then watching to see the results.  Each time you add some new code or make changes to your variables, build and run your application to implement these changes and see the outcome.
+
+\section drawingShapes Drawing Shapes
+Let's begin by drawing a few simple shapes.  To draw a circle to the screen, we can use the <em>drawSolidCircle</em> function.  This function is part of the ci::gl library, so we'll need to include that library at the top of our code, and also add it as a prefix when we call the function.\n
+\n
+At the top of the program, let's include the gl library:
+\code
+#include "cinder/app/AppBasic.h"
+#include "cinder/gl/gl.h"			//<-- this line of code gets added
+\endcode
+And inside our draw loop, let's draw a circle:
+\code
+void p5drawingApp::draw()
+{	
+    gl::clear();
+    gl::drawSolidCircle(Vec2f(200.0f, 200.0f), 100.0f);  //<-- this line of code gets added
+}
+\endcode
+
+Lo and behold, we have a circle!\n
+\n
+\image html lone_circle.png
+\n
+\n
+The drawSolidCircle() function is quite similar to the ellipse() function in Processing, but the arguments you plug into the function are a little different.  With the ellipse() function in Processing, you plug in the x-position and y-position of the center point, as well as the width and height of the ellipse.  The drawSolidCircle() function takes 2 arguments: the first is of the Vec2f datatype, which essentially is packaging the x and y positions into a single variable; and the second is the radius of the circle as a float.  (Note that you could also package x, y, and z coordinates together in a Vec3f as an alternative.)  In our example, both the x and y coordinates of the circle are 200.0 (note that you add an 'f' character at the end to signify a float), while the radius is 100.0.
+
+\section animate Animating a Shape
+
+Working towards making an animation, first let's add variables for the position and radius of the circle so that we can dynamically update their values.\n
+\n
+In the draw() loop, let's replace the numeric arguments with the variables 'xyPosition' and 'radius':
+\code
+void p5drawingApp::draw()
+{
+    gl::clear();
+    gl::drawSolidCircle( xyPosition, radius );   //<-- this line of code got updated, inputting our variables
+}
+\endcode
+In the App Class, let's declare these two new variables:
+\code
+class p5drawingApp : public AppBasic {
+public:
+	void setup();
+	void update();
+	void draw();
+	
+	Vec2f xyPosition;			//<-- here we are DECLARING our variable
+	float radius;				//<-- here too
+};
+\endcode
+And in the setup() function, let's assign these variable with initial values:
+\code
+void p5drawingApp::setup()
+{
+	xyPosition = Vec2f( 200.0f, 200.0f );  	//<-- here we are DEFINING our variable, by assigning them with starting values
+	radius = 100.0f;						//<-- here too
+}
+\endcode
+If we were to build and run the code again now, everything will look exactly the same as before.  However, we can now manipulate the values of these variables in the update loop, giving our project some animation.\n
+\n
+Let's add the following lines of code to the update() loop:
+\code
+void p5drawingApp::update()
+{	
+	float modifier1 = sin( getElapsedSeconds() );
+	float modifier2 = cos( getElapsedSeconds() );
+	radius += modifier1;
+	xyPosition += Vec2f(modifier1, modifier2);
+}
+\endcode
+Each modifier fluctuates between 1 and -1, but with different starting points.  Adding this to the xy vector, moves it in a circular motion, while adding it to the radius cycles the radius bigger and smaller.  Now when we run the program, we get a nice little animation: \n
+\n
+<embed src="../images/ball_ani_1.mov" width="642" height="504"></embed>
+
+\section interaction Mouse Interaction
+
+Although its more interesting to have our ball move than when it was just standing still, it would be even more fun if we could get it to interact with our mouse.  Let's add a mouse event listener to our program so that we can determine the location of the mouse, and use that vector to place our animated ball.\n
+\n
+First, let's add a mouseMove() function to our App Class:
+\code
+class p5drawingApp : public AppBasic {
+public:
+	void setup();
+	void update();
+	void draw();
+	
+	Vec2f xyPosition;
+	float radius;
+	
+	void mouseMove( MouseEvent event ); //<-- this line got added
+};
+\endcode
+Next, let's flesh out the details for our mouseMove() function in the main body of our code:
+\code
+void p5drawingApp::mouseMove( MouseEvent event )
+{
+	xyPosition = event.getPos() ;
+}
+\endcode
+Every time the mouse location changes, our function will get called.  And each time it gets called, it will get the mouse's x and y coordinates and assign them to the xyPosition variable.
+
+\section drawing Drawing to Our Screen
+
+Rather than simply having our circle moving around our mouse, let's get it to draw to the screen when we click or when we click and drag the mouse.\n
+\n
+First let's delete all of the code in our update loop, so that the circle's movement is only driven by the mouse.
+\code
+void p5drawingApp::update()
+{		 
+}
+\endcode
+
+Next, let's add some additional mouse event listeners for whether the mouse is being clicked or not and whether it is being dragged.  In the App Class, let's first declare these new functions and let's also create a bool variable to store the state of the mouse button.  Note that these new event listeners will replace the existing mouseMove function.
+
+\code
+class p5drawingApp : public AppBasic {
+public:
+	void setup();
+	void update();
+	void draw();
+	
+	Vec2f xyPosition;
+	float radius;
+	
+	//void mouseMove( MouseEvent event );  <-- this line should get deleted.
+	void mouseDrag( MouseEvent event );  //<-- this line gets added.
+	void mouseUp( MouseEvent event );	 //<-- and this one.
+	
+	bool click;							 //<-- this stores the state of the mouse
+};
+\endcode
+
+And let's flesh out the details of all of our mouse event functions:
+
+\code
+/*void p5drawingApp::mouseMove( MouseEvent event )		<-- this entire block of code should get removed
+{
+	xyPosition = event.getPos() ;
+}*/
+
+void p5drawingApp::mouseDrag( MouseEvent event )		//<-- when the mouse is dragged, record its coordinates
+{
+	xyPosition = event.getPos() ;
+	click = true;
+}
+
+void p5drawingApp::mouseUp( MouseEvent event )			//<-- when the mouse button is released, record it to the click variable
+{
+	if(event.isLeft()){
+		click = false;
+	}
+}
+\endcode
+
+We're going to want to have all of the individual circles become marks on the screen, rather than disappearing once a new position is determined.  To do this, let's move the gl::clear() function from the draw loop and place it in the setup() function.  Now the screen will go black only at the beginning of the program, and all the circles drawn after that point will accumulate on the screen.  And while we're at it, let's reduce the size of each circle by changing our radius value to 10.\n
+\n
+Our setup(), update(), and draw() functions should now look like this:
+
+\code
+void p5drawingApp::setup()
+{
+	xyPosition = Vec2f( 200.0f, 200.0f );
+	radius = 10.0f; // <-- This line of code got updated
+	gl::clear(); // <-- This line got moved from draw() to setup()
+}
+
+void p5drawingApp::update()
+{	 
+}
+
+void p5drawingApp::draw()
+{	
+    gl::drawSolidCircle( xyPosition, radius );
+}
+\endcode
+
+Now when we move the mouse, it fills in the screen white, but soon the entire screen will be white.  Let's set an initial value to our click variable in the setup() function, and let's change the code inside our draw() loop so that it only draws when click evaluates as true:
+
+\code
+void p5drawingApp::setup()
+{
+	xyPosition = Vec2f( 200.0f, 200.0f );
+	radius = 10.0f;
+	gl::clear();
+	click = false;
+}
+
+void p5drawingApp::draw()
+{	
+	if(click){
+		gl::drawSolidCircle( xyPosition, radius );
+	}
+}
+\endcode
+
+\section erase_screen Erasing the Screen
+Now that we can draw on our screen, let's add the ability to erase the screen when we want to.  The same way that we created event listeners for mouse interaction, now let's create an event listener for the keyboard.\n
+\n
+We'll start by declaring our keyDown function in the App Class.
+
+\code
+class p5drawingApp : public AppBasic {
+public:
+	void setup();
+	void update();
+	void draw();
+	
+	Vec2f xyPosition;
+	float radius;
+	
+	void mouseDrag( MouseEvent event );
+	void mouseUp( MouseEvent event );
+	
+	void keyDown( KeyEvent event ); // <---- new line inserted here
+	
+	bool click;
+};
+\endcode
+
+And next we'll define the function in the main part of our code:
+
+\code
+void p5drawingApp::keyDown( KeyEvent event ) {
+    if( event.getChar() == ' ' ){
+        gl::clear();
+    }
+}
+\endcode
+
+Now when the space bar is pressed down, the gl::clear function will run again, erasing our screen.
+
+\section wrapUp Wrap Up
+
+We now have written our own simple drawing program from scratch!\n
+\n
+\image html hello_world.png
+\n
+For your convenience, here's the final code, with plenty of comments.
+\code
+#include "cinder/app/AppBasic.h"
+#include "cinder/gl/gl.h"
+using namespace ci;
+using namespace ci::app;
+using namespace std;
+
+//this is our App Class
+class p5drawingApp : public AppBasic {
+public:
+	//these are our 3 main functions
+	void setup();
+	void update();
+	void draw();
+	
+	Vec2f xyPosition;	//this variable stores the x and y coordinates of the mouse
+	float radius;		//this variable stores the radius of the circles we'll draw
+	
+	//these are the event listeners for the mouse
+	void mouseDrag( MouseEvent event );
+	void mouseUp( MouseEvent event );
+	
+	//this is the event listener for the keyboard
+	void keyDown( KeyEvent event );
+	
+	bool click;  //this variable stores whether the mouse is being held down or not
+};
+
+//this is the definition of our setup() function
+void p5drawingApp::setup()
+{
+	xyPosition = Vec2f( 200.0f, 200.0f );	//initial value of the mouse position
+	radius = 10.0f;				//value of the circle radius
+	gl::clear();				//clear the screen
+	click = false;				//set the initial state to false, or not-clicked
+}
+
+//this is the definition of our update() function
+void p5drawingApp::update()
+{       
+}
+
+//this is the definition of our draw() function
+void p5drawingApp::draw()
+{    
+	//if the 'click' variable is set as true, draw a circle
+	if(click){
+		gl::drawSolidCircle( xyPosition, radius );
+	}
+}
+
+//if the mouse gets dragged, record the mouses positions
+void p5drawingApp::mouseDrag( MouseEvent event )
+{
+	xyPosition = event.getPos() ;
+	click = true;
+}
+
+//if the mouse button is up, set 'click' to false
+void p5drawingApp::mouseUp( MouseEvent event )
+{
+	if(event.isLeft()){
+		click = false;
+	}
+}
+
+//if the space bar is pressed, clear the screen
+void p5drawingApp::keyDown( KeyEvent event ) {
+    if( event.getChar() == ' ' ){
+        gl::clear();
+    }
+}
+
+//run our app, please!
+CINDER_APP_BASIC( p5drawingApp, RendererGl )
+\endcode
+\n
+\n
+
+Now that we have written our first simple drawing program, let's continue on to the \ref basic_drawing2 "basic drawing 2" lesson and make our application even better!
+*/

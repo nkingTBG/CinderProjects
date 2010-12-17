@@ -1,0 +1,718 @@
+/*! \page basic_drawing5 P5toCI - Basic Drawing 5
+<h1>P5 to CI - Basic Drawing 5</h1>
+\section overview Overview
+Object Oriented Programming (OOP) is one of the most powerful features of modern programming languages.  You can create a template object (aka a class) with lots of parameters, and then have multiple instances of that object all with their own unique settings.  This makes the job of keeping track of lots of things much simpler, both for the programmer and for the computer.\n
+\n
+Whether you're already well-versed in OOP or you're entirely new to it, let's start with some simple examples, just so you can begin to understand the structure and syntax involved.
+\section Basic Structure
+As a starting point, let's use our basic app template:
+\n
+\code
+#include "cinder/app/AppBasic.h"
+#include "cinder/gl/gl.h"
+using namespace ci;
+using namespace ci::app;
+using namespace std;
+
+class p5drawingApp : public AppBasic {
+public:
+	void setup();
+	void update();
+	void draw();
+};
+
+void p5drawingApp::setup()
+{
+}
+
+void p5drawingApp::update()
+{
+}
+
+void p5drawingApp::draw()
+{
+	gl::clear();
+}
+
+CINDER_APP_BASIC( p5drawingApp, RendererGl )
+\endcode
+\n
+
+Now let's create a new class called 'Circle.'
+
+\n
+\code
+#include "cinder/app/AppBasic.h"
+#include "cinder/gl/gl.h"
+using namespace ci;
+using namespace ci::app;
+using namespace std;
+
+//the below block of code is the initial declaration of our class
+class Circle {
+public:
+	//here is where we declare all the functions and variables that are 'members' of the class.
+	Circle(); 	//this is our class 'constructor'. Note that it has no return type.
+}; //note that a class block of code is terminated with a semi-colon.
+
+Circle::Circle()		//here is our class constructor again.  First it was declared, now it is defined.
+{
+}
+
+class p5drawingApp : public AppBasic {
+public:
+	void setup();
+	void update();
+	void draw();
+	Circle circle0; //here we are actually creating a single instance of our Circle class, called "circle0".
+};
+
+void p5drawingApp::setup()
+{
+}
+
+void p5drawingApp::update()
+{
+}
+
+void p5drawingApp::draw()
+{
+	gl::clear();
+}
+
+CINDER_APP_BASIC( p5drawingApp, RendererGl )
+\endcode
+
+\n
+When you run your code now, you'll simply see a black screen.  But the point is to see that our own custom class, "Circle," is very similar in syntax and structure to our App Class.  And this is because they are essentially the same thing: a Class declaration, which is later followed with individual definition blocks of code.  Note that you must declare your Circle class <em>before</em> your App Class or else you won't be able to create any Circle within your app.
+
+\section adding_members Adding Member Functions and Variables
+
+Now let's go ahead and begin to fill in the details of our Circle class.  Just like we would with any functions or variables, we'll first declare them in the class Declaration, and then we'll define them in their own blocks of code.
+\n
+\code
+class Circle {
+public:
+	Circle();
+	
+	//this is a second (aka 'over-loaded') class constructor.
+	//Now we can pass in location arguments when create a new circle
+	Circle(float xPos, float yPos);
+		
+	void draw(); //this is a draw() function for our Circle
+	void update(); //this is an update() function for our Circle
+	
+	//note that it is common convention to add an 'm' before a Class variable, to indicate it is a 'member' of that Class
+	Vec2f mPosition;	//this is a variable to store a circle's location
+	float mRadius;		//and a variable to store a circle's radius
+};
+
+Circle::Circle() //this constructor remains empty.
+{
+}
+
+//this second constructor acts as our 'setup' block for this Class, allowing us to assign initial values whenever a new circle is created
+Circle::Circle(float x, float y)
+{
+	mPosition = Vec2f(x,y);  			//the two arguments get passed into our mPosition variable.
+	mRadius = 5.0f;						//here we are assigning an initial value to the radius.  Every circle will share this value.
+}
+
+//this draw function should be familiar.  Note that we will end up calling this draw function inside of our App's draw function.
+void Circle::draw()
+{
+	gl::drawSolidCircle( mPosition, mRadius);  //draw a circle
+}
+
+//this update function is empty for now, but soon we'll add some more code inside
+void Circle::update()
+{
+}
+\endcode
+ 
+\n
+Now let's create a single circle at (100,100) and let's draw it to our screen:
+\code
+void p5drawingApp::setup()
+{
+	circle0 = Circle(100.0f, 100.0f);
+}
+
+void p5drawingApp::update()
+{
+	circle0.update();
+}
+
+void p5drawingApp::draw()
+{
+	gl::clear();
+	circle0.draw();
+}
+\endcode
+
+\n
+This is the basic structure of creating and initializing custom classes.  Now when we run our code, we see a single circle drawn to our screen.\n
+\n
+\n
+\image html 1circle.png
+\n
+\n
+Here is what our code looks like at this point:
+\n
+\code
+#include "cinder/app/AppBasic.h"
+#include "cinder/gl/gl.h"
+using namespace ci;
+using namespace ci::app;
+using namespace std;
+
+/*////////////////////////////////////////////////////////*/
+/*////////////////    Circle Class     ///////////////////*/
+/*////////////////////////////////////////////////////////*/
+
+class Circle {
+public:
+	Circle();
+	Circle(float xPos, float yPos);
+	
+	void draw();
+	void update();
+	
+	Vec2f mPosition;
+	float mRadius;
+};
+
+Circle::Circle(){
+	
+}
+
+Circle::Circle(float x, float y){
+	mPosition = Vec2f(x,y);
+	mRadius = 5.0f;
+}
+
+void Circle::draw()
+{
+	gl::drawSolidCircle( mPosition, mRadius);
+}
+
+void Circle::update()
+{
+}
+
+/*////////////////////////////////////////////////////////*/
+/*////////////////      App Class      ///////////////////*/
+/*////////////////////////////////////////////////////////*/
+
+class p5drawingApp : public AppBasic {
+public:
+	void setup();
+	void update();
+	void draw();
+	Circle circle0;
+};
+
+void p5drawingApp::setup()
+{
+	circle0 = Circle(100.0f, 100.0f);
+}
+
+void p5drawingApp::update()
+{
+	circle0.update();
+}
+
+void p5drawingApp::draw()
+{
+	gl::clear();
+	circle0.draw();
+}
+
+CINDER_APP_BASIC( p5drawingApp, RendererGl )
+\endcode
+\n
+
+\section headers Creating Separate C++ Files and Header Files
+
+It is common convention to create custom classes in separate files for the sake of clarity and to keep your classes, and your support of them, as a separate entity.  In addition, classes can be and often are reused, so it makes perfect sense for them to live outside your application.
+\n
+\n
+Rather than simply adding the necessary blocks of code into our existing file, as we have done thus far, let's create some new files to place this same information instead.
+\n
+\n
+Our first step is to create a new C++ file.  You can simply right click on the source folder within your Xcode project, in Xcode, and choose Add->New File.
+\n
+\n
+\image html add_file.png
+\n
+\n
+When the New File window opens up, next choose a C/C++ file from the left margin, and then click the icon for a new C++ file and choose 'Next.'
+\n
+\n
+\image html choose_Cpp.png
+\n
+\n
+Now we have the ability to name our new file and place it into our project folder.  Note that the default save location will be the Xcode sub-folder where your Xcode project file is saved.  It makes sense to navigate up one level and instead save this new C++ file into the 'src' folder, as this is additional source code.  Also, you should uncheck the "Also create a .h" option box, as you will want to do this manually.
+\n
+\n
+\image html create_file.png
+\n
+\n
+Next we'll want to repeat our process to create a header (.h) file.  This time, let's right click on the 'headers' folder in our Xcode project, and again click Add->New File.
+\n
+\n
+\image html add_file2.png
+\n
+\n
+When the New File window opens up, next choose a C/C++ file from the left margin, and then click the icon for a new header file and choose 'Next.'
+\n
+\n
+\image html choose_dotH.png
+\n
+\n
+Again, you'll want to enter a file name and choose a location.  This time, put the new file in the "include" directory of your project folder.
+\n
+\n
+\image html create_file2.png
+\n
+\n
+Now that we have our separate files created, let's go ahead and move our code into the appropriate places.
+\section header_file Separating the Class Files
+The header file is where you put the Class Declaration, separate from the Class Definition (which goes in the .cpp file).  So let's cut and paste our Circle Class declaration block of code into our Circle.h file.
+\n
+\n
+\code
+#pragma once  //<-- this line of code tells the preprocessor to include this code only once
+#include "cinder/app/AppBasic.h" //<-- here we are again including the basic Cinder app library
+
+//and here we are re-establishing the namespaces
+using namespace ci;
+using namespace ci::app;
+using namespace std;
+
+//and here we have our Circle class declaration
+class Circle {
+public:
+	Circle();
+	Circle(float xPos, float yPos);
+	
+	void draw();
+	void update();
+	
+	Vec2f mPosition;
+	float mRadius;
+};
+\endcode
+\n
+Next let's place the remaining code from our Circle class into the Circle.cpp file.
+\n
+\n
+\code
+#include "Circle.h" //<-- here we are inlcuding the header file
+#include "cinder/gl/gl.h" //<-- and here we are including the gl.h file so we can use the drawSolidCircle function
+
+Circle::Circle(){
+	
+}
+
+Circle::Circle(float x, float y){
+	mPosition = Vec2f(x,y);
+	mRadius = 5.0f;
+}
+
+void Circle::draw(){
+	gl::drawSolidCircle( mPosition, mRadius);
+}
+
+void Circle::update(){
+}
+\endcode
+\n
+And now we simply include the Circle.h file in our App file to make the Circle class available to us.
+\n
+\code
+#include "cinder/app/AppBasic.h"
+#include "cinder/gl/gl.h"
+#include "Circle.h" //<-- this line of code needs to be added
+using namespace ci;
+using namespace ci::app;
+using namespace std;
+
+class p5drawingApp : public AppBasic {
+public:
+	void setup();
+	void update();
+	void draw();
+	Circle circle0;
+};
+
+void p5drawingApp::setup()
+{
+	circle0 = Circle(100.0f, 100.0f);
+}
+
+void p5drawingApp::update()
+{
+	circle0.update();
+}
+
+void p5drawingApp::draw()
+{
+	gl::clear();
+	circle0.draw();
+}
+
+CINDER_APP_BASIC( p5drawingApp, RendererGl )
+\endcode
+\n
+\n
+Now that we have an understanding of how to create our own custom Classes, let's go back into the details of our Circle class and add some cool functionality.
+
+\section something_interesting Bouncing Ball
+Let's add some basic physics into our scene and make our circle behave like a bouncing ball.  Let's start by adding some variables for Velocity and Gravity.
+\n
+\n
+Let's declare these new variables in the Circle.h file, and define them in the Circle.cpp file.  Note that you can toggle easily between these two files by pressing option+command+upArrow on the keyboard.
+\n
+\n
+\code
+//this block of code gets updated in the Circle.h file
+class Circle {
+public:
+	Circle();
+	Circle(float xPos, float yPos);
+	
+	void draw();
+	void update();
+	
+	Vec2f mPosition, mVelocity, mGravity;  //we're simply adding two new variable declarations
+	float mRadius;
+};
+
+//the below two blocks of code gets updated in the Circle.cpp file
+Circle::Circle(float x, float y){
+	mPosition = Vec2f(x,y);
+	mRadius = 5.0f;
+	mVelocity = Vec2f(5.0f, -5.0f);  //and here we assign an initial value
+	mGravity = Vec2f(0.0f, 0.15f);	 //and again here
+}
+
+void Circle::update(){
+	mVelocity += mGravity;  	//add gravity to the velocity in every frame
+	mPosition += mVelocity;		//add velocity to the circles position in every frame
+}
+\endcode
+
+\n
+\n
+Now when we run our App, we can watch a single ball move across the screen.  But instead of it bouncing, it just runs off camera.  Let's add some if statements to get the balls direction to change when it hits the edge of the screen.
+\n
+\n
+\code
+void Circle::update(){
+	
+	//if the ball goes too far to the right or left, change its x-direction and place it back on-screen
+	if(mPosition.x > getWindowWidth() - mRadius || mPosition.x < mRadius){
+		mVelocity.x *= -1;
+		if (mPosition.x > getWindowWidth() - mRadius) {
+			mPosition.x = getWindowWidth() - mRadius;
+		}
+		if (mPosition.x < mRadius) {
+			mPosition.x = mRadius;
+		}
+		mVelocity *= 0.8f;  //when it bounces, cut down its speed by 20%
+	}	
+	
+	//if the ball goes to far up or down, change its y-direction and place it back on screen
+	if(mPosition.y > getWindowHeight() - mRadius || mPosition.y < mRadius){
+		mVelocity.y *= -1;
+		if (mPosition.y > getWindowHeight() - mRadius) {
+			mPosition.y = getWindowHeight() - mRadius;
+		}
+		if (mPosition.y < mRadius) {
+			mPosition.y = mRadius;
+		}
+		mVelocity *= 0.8f;  //when it bounces, cut down its speed by 20%
+	}
+	
+	mVelocity += mGravity;
+	mPosition += mVelocity;
+	
+}
+\endcode
+\n
+\n
+We've done the hard part of creating our own custom class; now let's do the fun part and change our app from having one circle to having hundreds of circles.
+\section multiplicity Multiplicity
+In our app.cpp file, we've created one instance of our Circle class, called circle0, that gets updated and drawn with each frame.  What if instead we created a list of circles, and with each frame, a new circle is drawn?
+\n
+\n
+Let's go ahead and change our code for this new functionality:
+\n
+\n
+\code
+#include "cinder/app/AppBasic.h"
+#include "cinder/gl/gl.h"
+#include "Circle.h"
+#include <list> //<-- we'll need to include the ability to use lists
+using namespace ci;
+using namespace ci::app;
+using namespace std;
+
+class p5drawingApp : public AppBasic {
+public:
+	void setup();
+	void update();
+	void draw();
+	//Circle circle0; <-- this line of code gets replaced with the below line of code
+	list<Circle> circles;  // this creates our list of Circle objects
+};
+
+void p5drawingApp::setup()
+{	
+	//circle0 = Circle(100.0f, 100.0f); <-- this line of code gets replaced with the below line of code
+	
+	circles.push_back( Circle(100.0f, 100.0f) );  //this creates one new Circle at the point (100,100)
+}
+
+void p5drawingApp::update()
+{	
+	//circles0.update(); <-- this line of code gets replaced with the below lines of code
+	
+	//here is an iterator that updates all of our the circles in our list
+	for( list<Circle>::iterator i = circles.begin(); i != circles.end(); ++i ) {
+		i->update();
+	}
+	
+	circles.push_back( Circle(100.0f, 100.0f) );  //here we are creating a new circle with each frame
+}
+
+void p5drawingApp::draw()
+{
+	gl::clear();
+	
+	//circle0.draw() <-- this line of code gets replaced with the below line of code
+	
+	//here is an iterator that draws all of our the circles in our list
+	for( list<Circle>::iterator i = circles.begin(); i != circles.end(); ++i ) {
+		i->draw();
+	}
+}
+
+CINDER_APP_BASIC( p5drawingApp, RendererGl )
+\endcode
+\n
+\n
+When the code is built and run, you'll see that there are new circles being drawn every frame, all of which follow the exact same path.  It looks almost like we are seeing a trail behind our circle, because each one is so perfectly identical.
+\n
+\n
+\image html ball_bounce1.png
+\n
+\n
+Let's add some variation to our circles so that we can begin to differentiate one from the next.  First let's update our Circle.h file to incorporate a variation variable:
+\n
+\n
+\code
+#pragma once
+#include "cinder/app/AppBasic.h"
+
+using namespace ci;
+using namespace ci::app;
+using namespace std;
+
+class Circle {
+public:
+	Circle();
+	Circle(float xPos, float yPos);
+	
+	void draw();
+	void update();
+	
+	Vec2f mPosition, mVelocity, mGravity;
+	float mRadius, mVariation; //<-- here we're adding a new variable called "variation"
+};
+\endcode
+\n
+\n
+And next let's update our Circle.cpp file so that some of the circle values are modulated by this variation:
+\n
+\n
+\code
+#include "Circle.h"
+#include "cinder/gl/gl.h"
+#include "cinder/Rand.h" //<-- we'll need to include this file to make random values
+
+
+Circle::Circle(){
+	
+}
+
+Circle::Circle(float x, float y){
+	mVariation = Rand::randFloat(0.9f, 1.1f); //here we're generating random numbers in a very small range, close to 1.0
+	mPosition = Vec2f(x,y);
+	mRadius = 5.0f; 
+	mVelocity = Vec2f(5.0f * mVariation, -5.0f * mVariation); //<-- we'll multiply the standard value times our variation
+	mGravity = Vec2f(0.0f, 0.15f * mVariation); //<-- again, we adding in variation
+}
+
+void Circle::update(){
+	
+	if(mPosition.x > getWindowWidth() - mRadius || mPosition.x < mRadius){
+		mVelocity.x *= -1;
+		if (mPosition.x > getWindowWidth() - mRadius) {
+			mPosition.x = getWindowWidth() - mRadius;
+		}
+		if (mPosition.x < mRadius) {
+			mPosition.x = mRadius;
+		}
+		mVelocity *= 0.8f * mVariation; //<-- and again
+	}	
+	
+	if(mPosition.y > getWindowHeight() - mRadius || mPosition.y < mRadius){
+		mVelocity.y *= -1;
+		if (mPosition.y > getWindowHeight() - mRadius) {
+			mPosition.y = getWindowHeight() - mRadius;
+		}
+		if (mPosition.y < mRadius) {
+			mPosition.y = mRadius;
+		}
+		mVelocity *= 0.8f * mVariation; //<-- and once more
+	}
+	
+	mVelocity += mGravity;
+	mPosition += mVelocity;
+	
+}
+
+void Circle::draw(){
+	gl::drawSolidCircle( mPosition, mRadius);
+}
+
+\endcode
+\n
+\n
+Although we still have an app that makes a new circle each frame and has all the circles bouncing around the screen, now our app is much more interesting and the power of object-oriented-programming is evident.
+\n
+\n
+\image html ball_bounce2.png
+\n
+\n
+\section wrapup Wrapup
+Here's all the final code from this lesson:
+\n
+\n
+\code
+/*//////////Code from the App.cpp file//////////*/
+#include "cinder/app/AppBasic.h"
+#include "cinder/gl/gl.h"
+#include "Circle.h"
+#include <list>
+using namespace ci;
+using namespace ci::app;
+using namespace std;
+
+class p5drawingApp : public AppBasic {
+public:
+	void setup();
+	void update();
+	void draw();
+	list<Circle> circles;
+};
+
+void p5drawingApp::setup()
+{		
+	circles.push_back( Circle(100.0f, 100.0f) );
+}
+
+void p5drawingApp::update()
+{	
+	for( list<Circle>::iterator i = circles.begin(); i != circles.end(); ++i ) {
+		i->update();
+	}
+	circles.push_back( Circle(100.0f, 100.0f) );
+}
+
+void p5drawingApp::draw()
+{
+	gl::clear();
+	for( list<Circle>::iterator i = circles.begin(); i != circles.end(); ++i ) {
+		i->draw();
+	}
+}
+
+CINDER_APP_BASIC( p5drawingApp, RendererGl )
+
+/*//////////Code from the Circle.h file//////////*/
+#pragma once
+#include "cinder/app/AppBasic.h"
+
+using namespace ci;
+using namespace ci::app;
+using namespace std;
+
+class Circle {
+public:
+	Circle();
+	Circle(float xPos, float yPos);
+	
+	void draw();
+	void update();
+	
+	Vec2f mPosition, mVelocity, mGravity;
+	float mRadius, mVariation;
+};
+
+/*//////////Code from the Circle.cpp file//////////*/
+#include "Circle.h"
+#include "cinder/gl/gl.h"
+#include "cinder/Rand.h"
+
+Circle::Circle(){
+	
+}
+
+Circle::Circle(float x, float y){
+	mVariation = Rand::randFloat(0.9f, 1.1f);
+	mPosition = Vec2f(x,y);
+	mRadius = 5.0f; 
+	mVelocity = Vec2f(5.0f * mVariation, -5.0f * mVariation);
+	mGravity = Vec2f(0.0f, 0.15f * mVariation);
+}
+
+void Circle::update(){
+	
+	if(mPosition.x > getWindowWidth() - mRadius || mPosition.x < mRadius){
+		mVelocity.x *= -1;
+		if (mPosition.x > getWindowWidth() - mRadius) {
+			mPosition.x = getWindowWidth() - mRadius;
+		}
+		if (mPosition.x < mRadius) {
+			mPosition.x = mRadius;
+		}
+		mVelocity *= 0.8f * mVariation;
+	}	
+	
+	if(mPosition.y > getWindowHeight() - mRadius || mPosition.y < mRadius){
+		mVelocity.y *= -1;
+		if (mPosition.y > getWindowHeight() - mRadius) {
+			mPosition.y = getWindowHeight() - mRadius;
+		}
+		if (mPosition.y < mRadius) {
+			mPosition.y = mRadius;
+		}
+		mVelocity *= 0.8f * mVariation;
+	}
+	
+	mVelocity += mGravity;
+	mPosition += mVelocity;
+	
+}
+
+void Circle::draw(){
+	gl::drawSolidCircle( mPosition, mRadius);
+}
+\endcode
+\n
+\n
+With the basics of OOP under our belt, now we're ready to incorporate custom Classes in our drawing app to push the functionality even further along.  Let's move on to the next and final lesson in this series: \ref basic_drawing6 "basic drawing 6".
+*/
