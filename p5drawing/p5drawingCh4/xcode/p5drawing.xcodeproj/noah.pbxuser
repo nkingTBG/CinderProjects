@@ -2,9 +2,9 @@
 {
 	00BAE6590E7ED9C10018A608 /* p5drawingApp.cpp */ = {
 		uiCtxt = {
-			sepNavIntBoundsRect = "{{0, 0}, {856, 806}}";
-			sepNavSelRange = "{511, 0}";
-			sepNavVisRange = "{0, 698}";
+			sepNavIntBoundsRect = "{{0, 0}, {922, 1690}}";
+			sepNavSelRange = "{3657, 0}";
+			sepNavVisRange = "{0, 934}";
 		};
 	};
 	29B97313FDCFA39411CA2CEA /* Project object */ = {
@@ -23,7 +23,7 @@
 					20,
 					678,
 					20,
-					48.16259765625,
+					48,
 					43,
 					43,
 					20,
@@ -38,12 +38,12 @@
 					PBXFileDataSource_Target_ColumnID,
 				);
 			};
-			PBXPerProjectTemplateStateSaveDate = 314296035;
-			PBXWorkspaceStateSaveDate = 314296035;
+			PBXPerProjectTemplateStateSaveDate = 314296723;
+			PBXWorkspaceStateSaveDate = 314296723;
 		};
 		perUserProjectItems = {
-			4FC3F14612BBC70000D1A9F9 /* PBXBookmark */ = 4FC3F14612BBC70000D1A9F9 /* PBXBookmark */;
-			4FC3F16412BBC83600D1A9F9 /* PBXTextBookmark */ = 4FC3F16412BBC83600D1A9F9 /* PBXTextBookmark */;
+			4FC3F19512BBC98000D1A9F9 /* PBXTextBookmark */ = 4FC3F19512BBC98000D1A9F9 /* PBXTextBookmark */;
+			4FC3F1AD12BBC9C700D1A9F9 /* PBXTextBookmark */ = 4FC3F1AD12BBC9C700D1A9F9 /* PBXTextBookmark */;
 		};
 		sourceControlManager = 4FC3F14D12BBC70000D1A9F9 /* Source Control */;
 		userBuildSettings = {
@@ -79,10 +79,6 @@
 		sourceDirectories = (
 		);
 	};
-	4FC3F14612BBC70000D1A9F9 /* PBXBookmark */ = {
-		isa = PBXBookmark;
-		fRef = 00BAE6590E7ED9C10018A608 /* p5drawingApp.cpp */;
-	};
 	4FC3F14D12BBC70000D1A9F9 /* Source Control */ = {
 		isa = PBXSourceControlManager;
 		fallbackIsa = XCSourceControlManager;
@@ -97,14 +93,24 @@
 		isa = PBXCodeSenseManager;
 		indexTemplatePath = "";
 	};
-	4FC3F16412BBC83600D1A9F9 /* PBXTextBookmark */ = {
+	4FC3F19512BBC98000D1A9F9 /* PBXTextBookmark */ = {
 		isa = PBXTextBookmark;
 		fRef = 00BAE6590E7ED9C10018A608 /* p5drawingApp.cpp */;
-		name = "p5drawingApp.cpp: 27";
+		name = "p5drawingApp.cpp: 113";
 		rLen = 0;
-		rLoc = 511;
+		rLoc = 3657;
 		rType = 0;
-		vrLen = 698;
+		vrLen = 972;
+		vrLoc = 0;
+	};
+	4FC3F1AD12BBC9C700D1A9F9 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 00BAE6590E7ED9C10018A608 /* p5drawingApp.cpp */;
+		name = "p5drawingApp.cpp: 130";
+		rLen = 0;
+		rLoc = 3657;
+		rType = 0;
+		vrLen = 934;
 		vrLoc = 0;
 	};
 	8D1107260486CEB800E47090 /* p5drawing */ = {
