@@ -1,0 +1,448 @@
+/*! \page cairoTut_2 Chapter 2 - Drawing with Cairo
+\section intro Introduction
+Cairo is a great tool for drawing.  If you are already familiar with Processing or Adobe Illustrator, you will likely find the workflow to be straightforward and simple to use.  Essentially you are defining paths on the screen, either as open lines or enclosed shapes, and then filling them with color or stroking their outline with color, or both.  Each step just adds to the one before it, and step by step you can draw some beautiful designs.
+\n
+\n
+One set of commands is used to define the drawing path( like rectangle(), circle(), line(), arc(), etc ), a second set of commands are used to define colors and apply the colors ( like setSource(), fill(), stroke(), etc ), and a third set of commands allows you to define the details of the path (like setLineWidth(), setLineCap(), etc ).  All of these concepts are standard to vector drawing tools, and should be familiar to you if you have some experience with Adobe Illustrator.
+\n
+\n
+\section basics Basic Drawing
+Let's begin by drawing a handful of shapes to the screen.
+\n
+\n
+\code
+void cairoApp::draw()
+{
+	cairo::Context ctx( cairo::createWindowSurface() );	
+	ctx.setSource( Colorf(0,0,0) );
+	ctx.paint();
+	
+	//store the center of the screen in a variable
+	Vec2f center = Vec2f( getWindowWidth()/2, getWindowHeight()/2 );
+	
+	//Square
+	ctx.rectangle(center.x - 100, center.y - 100, 200.0, 200.0 );
+	ctx.setSource( Colorf(1,1,0) );
+	ctx.fillPreserve();
+	ctx.setSource( Colorf(1.0, 0.5, 0) );
+	ctx.setLineWidth( 5.0 );
+	ctx.stroke();
+	
+	//Circles
+	ctx.circle( center + Vec2f(-30,-20), 20.0 );
+	ctx.circle( center + Vec2f(30,-20), 20.0 );
+	ctx.setSource( Colorf(1,1,1) );
+	ctx.fillPreserve();
+	ctx.setSource( Colorf(1.0, 0.5, 0) );
+	ctx.setLineWidth(1);
+	ctx.stroke();
+	
+	//More Circles
+	ctx.circle( center + Vec2f(-30,-20), 7.0 );
+	ctx.circle( center + Vec2f(30,-20), 7.0 );
+	ctx.setSource( Colorf(0,0,1) );
+	ctx.fill();
+	
+	
+	//Lines
+	ctx.line( center + Vec2f(-55,-55), center + Vec2f(-20,-70) );
+	ctx.line( center + Vec2f(55,-55), center + Vec2f(20,-70) );
+	ctx.setLineWidth(3.0);
+	ctx.setSource( Colorf(1.0,0.5,0) );
+	ctx.stroke();
+	
+	//Arc
+	ctx.arc(center.x, center.y - 20, 80.0, M_PI / 4, M_PI / 4 * 3);
+	ctx.setLineWidth(8.0);
+	ctx.setSource( Colorf(1,0,0) );
+	ctx.stroke();
+}
+\endcode
+\n
+\n
+As you can see with each element that we are drawing, there are a sequence of steps involved in making the shape.  Let's look closely at the rectangle we've drawn.
+\n
+\n
+\code
+//Square
+
+//define the rectangular path
+ctx.rectangle(center.x - 100, center.y - 100, 200.0, 200.0 );
+//note that the rectangle() method is about identical to the Processing rect() method
+//its first two arguments are the x/y coordinates of the top left corner
+//and its second two arguments are the length and width of the rectangle
+
+//set the active color to yellow
+ctx.setSource( Colorf(1,1,0) );
+
+//fill the active path with the active color
+ctx.fillPreserve();
+//note that when using fillPreserve(), the path remains active,
+//whereas fill() would leave the path inactive after filling it.
+
+//set the active color to orange
+ctx.setSource( Colorf(1.0, 0.5, 0) );
+
+//set the stroke line weight
+ctx.setLineWidth( 5.0 );
+
+//stroke the active path (which is still the rectangle) with the active color
+ctx.stroke();
+
+//note that with every command, the functions are children of the cairo Context
+//so each method begins with ctx and a period.
+\endcode
+\n
+\n
+Now when we build and run our code, we have a cute little face looking back at us.
+\n
+\n
+\image html face1.png
+\n
+\n
+\section interactivity Adding Interactivity
+\n
+\n
+Everything we know about manipulating images and data in Cinder is still available to us when using Cairo.  Let's add some interactivity to our application with the mouseMove() function.
+\n
+\n
+First we'll need to create an event listener and store the mouse's position in a global variable:
+\n
+\n
+\code
+class cairoApp : public AppBasic {
+public:
+	void setup();
+	void update();
+	void draw();
+	void mouseMove(MouseEvent event);
+	Vec2f mouseLocation;
+};
+
+void cairoApp::mouseMove(MouseEvent event)
+{
+	mouseLocation = event.getPos();
+}
+
+\endcode
+\n
+\n
+Next we can make the position of the inner eye circles move in relation to the mouse position:
+\n
+\n
+\code
+void cairoApp::draw()
+{
+	cairo::Context ctx( cairo::createWindowSurface() );	
+	ctx.setSource( Colorf(0,0,0) );
+	ctx.paint();
+	
+	Vec2f center = Vec2f( getWindowWidth()/2, getWindowHeight()/2 );
+	
+	//The below four lines of code were added
+	Vec2f offset = mouseLocation - center; //determine the vector between the mouse and the center
+	float length = offset.length(); //get the distance
+	offset.safeNormalize(); //normalize the vector
+	offset *= length/getWindowWidth() * 10; //multiply it as a percentage of the distance
+	
+	//Square
+	ctx.rectangle(center.x - 100, center.y - 100, 200.0, 200.0 );
+	ctx.setSource( Colorf(1,1,0) );
+	ctx.fillPreserve();
+	ctx.setSource( Colorf(1.0, 0.5, 0) );
+	ctx.setLineWidth( 5.0 );
+	ctx.stroke();
+	
+	//Circles
+	ctx.circle( center + Vec2f(-30,-20), 20.0 );
+	ctx.circle( center + Vec2f(30,-20), 20.0 );
+	ctx.setSource( Colorf(1,1,1) );
+	ctx.fillPreserve();
+	ctx.setSource( Colorf(1.0, 0.5, 0) );
+	ctx.setLineWidth(1);
+	ctx.stroke();
+	
+	//More Circles
+	//The below two lines of code were modified
+	ctx.circle( center + Vec2f(-30,-20) + offset, 7.0 ); //add the offset to the circle position
+	ctx.circle( center + Vec2f(30,-20) + offset, 7.0 ); //add the offset to the circle position
+	ctx.setSource( Colorf(0,0,1) );
+	ctx.fill();
+	
+	//Lines
+	ctx.line( center + Vec2f(-55,-55), center + Vec2f(-20,-70) );
+	ctx.line( center + Vec2f(55,-55), center + Vec2f(20,-70) );
+	ctx.setLineWidth(3.0);
+	ctx.setSource( Colorf(1.0,0.5,0) );
+	ctx.stroke();
+	
+	//Arc
+	ctx.arc(center.x, center.y - 20, 80.0, M_PI / 4, M_PI / 4 * 3);
+	ctx.setLineWidth(8.0);
+	ctx.setSource( Colorf(1,0,0) );
+	ctx.stroke();
+}
+\endcode
+\n
+\n
+Let's build and run the code again.  Now our little guy is completed engaged with the way we move our mouse, watching us attentively.
+\n
+\n
+\htmlonly
+<iframe src="https://dr0pb0x.s3.amazonaws.com/TBG/cairo_face_1.mov" width="680" height="575" frameborder="0"></iframe>
+\endhtmlonly
+\n
+\n
+Now let's add some more personality to the face.  By changing a few lines of code, we can draw his eyes so that they look closed.  Let's add this code within an if statement, so that his eyes close when we click the mouse.
+\n
+\n
+First let's add some additional mouse event listeners, as well as a variable to store whether or not the mouse is pressed down.
+\n
+\n
+\code
+class cairoApp : public AppBasic {
+public:
+	void setup();
+	void update();
+	void draw();
+	void mouseMove(MouseEvent event); 
+	void mouseDown(MouseEvent event); //<-- this line of code was added
+	void mouseUp(MouseEvent event);   //<-- this line of code was added
+	Vec2f mouseLocation;
+	bool mousePressed;				  //<-- this line of code was added
+};
+
+//this entire block of code was added
+void cairoApp::mouseDown(MouseEvent event)
+{
+	mousePressed = true;
+}
+
+//this entire block of code was added
+void cairoApp::mouseUp(MouseEvent event)
+{
+	mousePressed = false;
+}
+\endcode
+\n
+\n
+Next, let's add new code in our draw() loop.
+\n
+\n
+\code
+void cairoApp::draw()
+{
+	cairo::Context ctx( cairo::createWindowSurface() );	
+	ctx.setSource( Colorf(0,0,0) );
+	ctx.paint();
+	
+	Vec2f center = Vec2f( getWindowWidth()/2, getWindowHeight()/2 );
+	Vec2f offset = mouseLocation - center;
+	float length = offset.length();
+	offset.safeNormalize();
+	offset *= length/getWindowWidth() * 10;
+	
+	//Square
+	ctx.rectangle(center.x - 100, center.y - 100, 200.0, 200.0 );
+	ctx.setSource( Colorf(1,1,0) );
+	ctx.fillPreserve();
+	ctx.setSource( Colorf(1.0, 0.5, 0) );
+	ctx.setLineWidth( 5.0 );
+	ctx.stroke();
+	
+	//Circles
+	ctx.circle( center + Vec2f(-30,-20), 20.0 );
+	ctx.circle( center + Vec2f(30,-20), 20.0 );
+	//if the mouse is pressed down
+	if (mousePressed) {
+		ctx.setSource( Colorf(1,1,0) ); //set the color to yellow
+	} else {
+		ctx.setSource( Colorf(1,1,1) ); //else set it to white
+	}
+	ctx.fillPreserve();
+	ctx.setSource( Colorf(1.0, 0.5, 0) );
+	ctx.setLineWidth(1);
+	ctx.stroke();
+	
+	//More Circles
+	//if the mouse is pressed down
+	if (mousePressed) {
+		//draw an eye lid
+		ctx.arc(center.x - 30, center.y - 20, 20, M_PI / 6, M_PI / 6 * 5);
+		ctx.setSource( Colorf(1.0,0.5,0) );
+		ctx.setLineWidth(5);
+		ctx.stroke();
+		ctx.arc(center.x + 30, center.y - 20, 20, M_PI / 6, M_PI / 6 * 5);
+		ctx.stroke();
+	} else {
+		//draw pupils
+		ctx.circle( center + Vec2f(-30,-20) + offset, 7.0 );
+		ctx.circle( center + Vec2f(30,-20) + offset, 7.0 );
+		ctx.setSource( Colorf(0,0,1) );
+		ctx.fill();
+	}
+
+		
+	
+	//Lines
+	//if the mouse is pressed down
+	if(mousePressed){
+		//draw the eyebrows in one position
+		ctx.line( center + Vec2f(-55,-50), center + Vec2f(-20,-55) );
+		ctx.line( center + Vec2f(55,-50), center + Vec2f(20,-55) );
+	} else {
+		//draw the eyebrows in another position
+		ctx.line( center + Vec2f(-55,-55), center + Vec2f(-20,-70) );
+		ctx.line( center + Vec2f(55,-55), center + Vec2f(20,-70) );
+	}
+
+	ctx.setLineWidth(3.0);
+	ctx.setSource( Colorf(1.0,0.5,0) );
+	ctx.stroke();
+	
+	//Arc
+	ctx.arc(center.x, center.y - 20, 80.0, M_PI / 4, M_PI / 4 * 3);
+	ctx.setLineWidth(8.0);
+	ctx.setSource( Colorf(1,0,0) );
+	ctx.stroke();
+}
+\endcode
+\n
+\n
+Now our program is playful and looks great.
+\n
+\n
+\htmlonly
+<iframe src="https://dr0pb0x.s3.amazonaws.com/TBG/cairo_face_2.mov" width="680" height="575" frameborder="0"></iframe>
+\endhtmlonly
+\n
+\n
+\section final_code Final Code
+\n
+\n
+Here is the final code for our Cairo app:
+\n
+\n
+\code
+#include "cinder/app/AppBasic.h"
+#include "cinder/cairo/cairo.h"
+using namespace ci;
+using namespace ci::app;
+using namespace std;
+
+
+class cairoApp : public AppBasic {
+public:
+	void setup();
+	void update();
+	void draw();
+	void mouseMove(MouseEvent event);
+	void mouseDown(MouseEvent event);
+	void mouseUp(MouseEvent event);
+	Vec2f mouseLocation;
+	bool mousePressed;
+};
+
+void cairoApp::mouseDown(MouseEvent event)
+{
+	mousePressed = true;
+}
+
+void cairoApp::mouseUp(MouseEvent event)
+{
+	mousePressed = false;
+}
+
+void cairoApp::mouseMove(MouseEvent event)
+{
+	mouseLocation = event.getPos();
+}
+
+void cairoApp::setup()
+{
+}
+
+void cairoApp::update()
+{
+}
+
+void cairoApp::draw()
+{
+	cairo::Context ctx( cairo::createWindowSurface() );	
+	ctx.setSource( Colorf(0,0,0) );
+	ctx.paint();
+	
+	Vec2f center = Vec2f( getWindowWidth()/2, getWindowHeight()/2 );
+	Vec2f offset = mouseLocation - center;
+	float length = offset.length();
+	offset.safeNormalize();
+	offset *= length/getWindowWidth() * 10;
+	
+	//Square
+	ctx.rectangle(center.x - 100, center.y - 100, 200.0, 200.0 );
+	ctx.setSource( Colorf(1,1,0) );
+	ctx.fillPreserve();
+	ctx.setSource( Colorf(1.0, 0.5, 0) );
+	ctx.setLineWidth( 5.0 );
+	ctx.stroke();
+	
+	//Circles
+	ctx.circle( center + Vec2f(-30,-20), 20.0 );
+	ctx.circle( center + Vec2f(30,-20), 20.0 );
+	if (mousePressed) {
+		ctx.setSource( Colorf(1,1,0) );
+	} else {
+		ctx.setSource( Colorf(1,1,1) );
+	}
+	ctx.fillPreserve();
+	ctx.setSource( Colorf(1.0, 0.5, 0) );
+	ctx.setLineWidth(1);
+	ctx.stroke();
+	
+	//More Circles
+	if (mousePressed) {
+		ctx.arc(center.x - 30, center.y - 20, 20, M_PI / 6, M_PI / 6 * 5);
+		ctx.setSource( Colorf(1.0,0.5,0) );
+		ctx.setLineWidth(5);
+		ctx.stroke();
+		ctx.arc(center.x + 30, center.y - 20, 20, M_PI / 6, M_PI / 6 * 5);
+		ctx.stroke();
+	} else {
+		ctx.circle( center + Vec2f(-30,-20) + offset, 7.0 );
+		ctx.circle( center + Vec2f(30,-20) + offset, 7.0 );
+		ctx.setSource( Colorf(0,0,1) );
+		ctx.fill();
+	}
+	
+	//Lines
+	if(mousePressed){
+		ctx.line( center + Vec2f(-55,-50), center + Vec2f(-20,-55) );
+		ctx.line( center + Vec2f(55,-50), center + Vec2f(20,-55) );
+	} else {
+		ctx.line( center + Vec2f(-55,-55), center + Vec2f(-20,-70) );
+		ctx.line( center + Vec2f(55,-55), center + Vec2f(20,-70) );
+	}
+	ctx.setLineWidth(3.0);
+	ctx.setSource( Colorf(1.0,0.5,0) );
+	ctx.stroke();
+	
+	//Arc
+	ctx.arc(center.x, center.y - 20, 80.0, M_PI / 4, M_PI / 4 * 3);
+	ctx.setLineWidth(8.0);
+	ctx.setSource( Colorf(1,0,0) );
+	ctx.stroke();
+}
+
+CINDER_APP_BASIC( cairoApp, Renderer2d )
+
+\endcode
+\n
+\n
+\section wrapup Wrap-Up
+\n
+\n
+Drawing in Cinder with Cairo is super fun and easy.  And the resulting screen graphics look fantastic, thanks to Cairo's clean and polished rendering.
+\n
+\n
+Should we want to make more sophisticated drawings, it'll be useful to put some of our re-usable code into separate functions that we can call over and over.  We'll do this and more in the next tutorial, \ref cairoTut_3 "Chapter 3 - Cairo Functions".
+*/

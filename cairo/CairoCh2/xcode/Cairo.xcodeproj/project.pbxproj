@@ -15,8 +15,6 @@
 		00B784B60FF439BC000DE1D7 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00B784B20FF439BC000DE1D7 /* CoreAudio.framework */; };
 		00BAE65A0E7ED9C10018A608 /* CairoApp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00BAE6590E7ED9C10018A608 /* CairoApp.cpp */; };
 		00CCAF15116A9FEE008396D5 /* CinderApp.icns in Resources */ = {isa = PBXBuildFile; fileRef = 00CCAF14116A9FEE008396D5 /* CinderApp.icns */; };
-		4FC3F25A12BBCD7900D1A9F9 /* sunset.png in Resources */ = {isa = PBXBuildFile; fileRef = 4FC3F25912BBCD7900D1A9F9 /* sunset.png */; };
-		4FC3F27412BBCE2000D1A9F9 /* Droplet.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4FC3F27312BBCE2000D1A9F9 /* Droplet.cpp */; };
 		5323E6B20EAFCA74003A9687 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5323E6B10EAFCA74003A9687 /* CoreVideo.framework */; };
 		5323E6B60EAFCA7E003A9687 /* QTKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5323E6B50EAFCA7E003A9687 /* QTKit.framework */; };
 		53E3CDFC0E86099300238D2B /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 53E3CDFB0E86099300238D2B /* Carbon.framework */; };
@@ -37,9 +35,6 @@
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		32CA4F630368D1EE00C91783 /* Cairo_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Cairo_Prefix.pch; sourceTree = "<group>"; };
-		4FC3F25912BBCD7900D1A9F9 /* sunset.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = sunset.png; path = ../resources/sunset.png; sourceTree = SOURCE_ROOT; };
-		4FC3F27312BBCE2000D1A9F9 /* Droplet.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Droplet.cpp; path = ../src/Droplet.cpp; sourceTree = SOURCE_ROOT; };
-		4FC3F27612BBCE3B00D1A9F9 /* Droplet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Droplet.h; path = ../include/Droplet.h; sourceTree = SOURCE_ROOT; };
 		5323E6B10EAFCA74003A9687 /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = /System/Library/Frameworks/CoreVideo.framework; sourceTree = "<absolute>"; };
 		5323E6B50EAFCA7E003A9687 /* QTKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QTKit.framework; path = /System/Library/Frameworks/QTKit.framework; sourceTree = "<absolute>"; };
 		53E3CDFB0E86099300238D2B /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = /System/Library/Frameworks/Carbon.framework; sourceTree = "<absolute>"; };
@@ -72,7 +67,6 @@
 			isa = PBXGroup;
 			children = (
 				00BAE6590E7ED9C10018A608 /* CairoApp.cpp */,
-				4FC3F27312BBCE2000D1A9F9 /* Droplet.cpp */,
 			);
 			name = Source;
 			sourceTree = "<group>";
@@ -128,7 +122,6 @@
 			isa = PBXGroup;
 			children = (
 				32CA4F630368D1EE00C91783 /* Cairo_Prefix.pch */,
-				4FC3F27612BBCE3B00D1A9F9 /* Droplet.h */,
 			);
 			name = Headers;
 			sourceTree = "<group>";
@@ -136,7 +129,6 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				4FC3F25912BBCD7900D1A9F9 /* sunset.png */,
 				8D1107310486CEB800E47090 /* Info.plist */,
 				00CCAF14116A9FEE008396D5 /* CinderApp.icns */,
 			);
@@ -203,7 +195,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				00CCAF15116A9FEE008396D5 /* CinderApp.icns in Resources */,
-				4FC3F25A12BBCD7900D1A9F9 /* sunset.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -215,7 +206,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				00BAE65A0E7ED9C10018A608 /* CairoApp.cpp in Sources */,
-				4FC3F27412BBCE2000D1A9F9 /* Droplet.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

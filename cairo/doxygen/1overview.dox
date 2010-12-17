@@ -1,0 +1,6 @@
+/*! \page cairoTut_0 Overview
+\section intro Introduction
+One of the amazing features of Cinder is its ability to render screen graphics using the built-in 2d Cairo rendered.  Cairo is an easy to use 2d vector graphics library that has been wrapped into Cinder; it's both powerful and simple to get up and running with.
+
+This tutorial is intended to help you jump right into using Cairo. Let's begin with \ref cairoTut_1 "Chapter 1 - A Cairo Template".
+*/

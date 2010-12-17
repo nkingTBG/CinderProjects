@@ -1,0 +1,413 @@
+/*! \page cairoTut_4 Chapter 4 - Cairo Imaging
+\section intro Introduction
+\n
+\n
+In our previous lessons, we've been drawing images from scratch.  Now let's take a look at how we can work with external images.
+\n
+\n
+We'll begin with a Cairo Template in which the cairo context is a global variable:
+\n
+\n
+\code
+#include "cinder/app/AppBasic.h"
+#include "cinder/cairo/cairo.h"
+using namespace ci;
+using namespace ci::app;
+using namespace std;
+
+class cairoApp : public AppBasic {
+public:
+	void setup();
+	void update();
+	void draw();
+	cairo::Context ctx;
+};
+
+void cairoApp::setup()
+{
+	ctx = cairo::Context( cairo::createWindowSurface() );	
+}
+
+void cairoApp::update()
+{
+}
+
+void cairoApp::draw()
+{
+	ctx.setSource( Colorf(0,0,0) );
+	ctx.paint();
+}
+
+CINDER_APP_BASIC( cairoApp, Renderer2d )
+\endcode
+\n
+\n
+\section resource Adding Images as Resources to Cinder
+\n
+\n
+Browsing around on Flickr for a nice sample image, I found this hyper-real sunset photo by Yury Prokopenko.
+\n
+\n
+\image html sunset.png
+\n
+\n
+To make this image available to our cinder app, it needs to become a resource that gets built into our application.  First we'll need to save the image file in a logical place.  Saving it directly into the project's resource folder makes sense, but you could save it anywhere (like to a shared resource folder among many apps, for example).  Next we can make the file visible to Xcode by right clicking on the resources folder in our application and selecting add-> existing files.
+\n
+\n
+\image html add_existing.png
+\n
+\n
+Now we simply point Xcode to the file's location and choose "add" and then "add" again in the next window.
+\n
+\n
+Now that the image file is available to Xcode, we can place it onto a surface in our application.  Let's create a cinder::Surface32f variable, and assign it with the sunset.png image.  Like any global variable, we'll first declare it in our App class, and then we'll define it in our setup function.
+\n
+\n
+\code
+class cairoApp : public AppBasic {
+public:
+	void setup();
+	void update();
+	void draw();
+	cairo::Context ctx;
+	Surface32f surface;  //<-- this line of code was added
+};
+
+void cairoApp::setup()
+{
+	ctx = cairo::Context(cairo::createWindowSurface());
+	surface = Surface32f( loadImage( loadResource("sunset.png") ) );  //<-- added this
+}
+\endcode
+\n
+\n
+Should we build and run our code, we'll still have just a black screen.  Although we are putting all of the pixels from our image onto the surface object, the pixel information is not actually getting painted to the screen.
+\n
+\n
+\section rendering Rendering an Image
+The same way that we can select a color as our active "source," we can also fill cairo paths with images.(but i can't seem to figure this one out).  Instead we will be using our image as a reference to extract color information and make our own drawing.  Let's start by writing some code to go through the entire image, pixel by pixel, and paint the colors from the surface onto the surface of the screen in a huge array of rectangles.
+\n
+\n
+First let's create a function that extracts the color information from a single pixel.
+\n
+\n
+\code
+class cairoApp : public AppBasic {
+public:
+	void setup();
+	void update();
+	void draw();
+	Colorf getColor(Surface32f surface, Vec2i pixel); //<-- here is our function declaration
+	
+	cairo::Context ctx;
+	Surface32f surface;
+};
+
+Colorf cairoApp::getColor(Surface32f surface, Vec2i pixel) //<-- and here is the definition
+{
+	//the function take the surface and the current pixel's coordinates as arguments
+	
+	//get the red channel of the current pixel
+	float r = *surface.getDataRed(pixel);
+	//get the green channel of the current pixel
+	float g = *surface.getDataGreen(pixel);
+	//get the blue channel of the current pixel
+	float b = *surface.getDataBlue(pixel);
+	//return a color, made from all 3 channels
+	return Colorf( r, g, b );
+}
+\endcode
+\n
+\n
+Next let's create a nested for-loop that iterates through every pixel, extracts the color, and then paints a rectangle to the screen.
+\n
+\n
+\code
+void cairoApp::draw()
+{
+	//this nested for-loop cycles through every single x/y coordinate of the screen
+	for (int x = 0; x < getWindowWidth(); x++) {
+		for (int y = 0; y < getWindowHeight(); y++) {
+			
+			//for each x/y pair...
+			Vec2i pixel = Vec2i(x,y);				  //store the value in a Vec2i
+			Colorf color = getColor(surface, pixel);  //get the color with our custom getColor() method
+			ctx.rectangle(x,y,1,1);					  //create a 1x1 rectangle at our Vec2i's location
+			ctx.setSource(color);					  //set the active color to our extracted color
+			ctx.fill();								  //fill the rectangle with the color
+		}
+	}
+}
+\endcode
+\n
+\n
+Now when we run our code, we can see the image rendered to the screen.  (note that it there is a several second delay, as this is a lot of calculating and drawing of individual rectangles to do.)
+\n
+\n
+\image html sunset_window.png
+\n
+\n
+\section size Changing the Cell Size
+\n
+\n
+Rather than simply drawing pixel for pixel the same image as our reference photo, let's make the cell size (and therefor the sharpness of the image) something that we can dynamically change.
+\n
+\n
+If we make a few small changes to our for-loop, the cell size can be whatever we'd like.  Let's start by creating a global variable called "cellSize."  Then we'll incorporate it into our for loop.
+\n
+\n
+\code
+class cairoApp : public AppBasic {
+public:
+	void setup();
+	void update();
+	void draw();
+	Colorf getColor(Surface32f surface, Vec2i pixel); 
+	
+	cairo::Context ctx;
+	Surface32f surface;
+	
+	int cellSize;  //<-- here is our variable declaration
+};
+
+void cairoApp::setup()
+{
+	ctx = cairo::Context(cairo::createWindowSurface());
+	surface = Surface32f( loadImage( loadResource("sunset.png") ) );
+	cellSize = 10;  //<-- and here we give it an initial value of 10
+}
+
+void cairoApp::draw()
+{
+	//Now lets replace our increment and rectangle size to reflect cellSize
+	
+	for (int x = 0; x < getWindowWidth(); x+=cellSize) {       //<-- this line got updated
+		for (int y = 0; y < getWindowHeight(); y+=cellSize) {  //<-- this line got updated
+			Vec2i pixel = Vec2i(x,y);
+			Colorf color = getColor(surface, pixel);
+			ctx.rectangle(x,y,cellSize,cellSize);              //<-- this line got updated
+			ctx.setSource(color);
+			ctx.fill();
+		}
+	}
+}
+\endcode
+\n
+\n
+Now when we build and run our code, we get the below image.
+\n
+\n
+\image html sunset_10.png
+\n
+\n
+Next let's add the ability to increase or decrease the cellSize using keyboard commands.  We'll need to create a keyboard event listener.
+\n
+\n
+\code
+class cairoApp : public AppBasic {
+public:
+	void setup();
+	void update();
+	void draw();
+	Colorf getColor(Surface32f surface, Vec2i pixel);
+	void keyDown(KeyEvent event);     //<-- here is our function declaration 
+	
+	cairo::Context ctx;
+	Surface32f surface;
+	
+	int cellSize;
+};
+
+void cairoApp::keyDown(KeyEvent event) //<-- and here is the definition
+{
+	//if the 1 key is pressed, decrease cellSize
+	//if the 2 key is pressed, increase it
+	if( event.getChar() == '1' ) {
+		cellSize *= 0.667f;
+	} else if (event.getChar()== '2') {
+		cellSize *= 1.5f;
+	}
+	
+	//don't let cellSize get smaller than 2 or larger than the screen size
+	if (cellSize < 2){
+		cellSize = 2;
+	} else if (cellSize > getWindowWidth()){
+		cellSize = getWindowWidth();
+	}
+}
+\endcode
+\n
+\n
+Now when we build and run our code, we get an image that we can modify by pressing the 1 and 2 keys on the keyboard.
+\n
+\n
+\htmlonly
+<iframe src="https://dr0pb0x.s3.amazonaws.com/TBG/sunset.mov" width="680" height="575" frameborder="0"></iframe>
+\endhtmlonly
+\n
+\n
+\section average Color Averaging
+One problem in with our code is that we are getting only partially accurate color information.  The color that gets returned from our getColor function is coming from a single pixel, based on the Vec2i argument.  This pixel represents the top left corner of the rectangle that gets drawn.  A more accurate way to determine the fill color is to take an average across all of the pixels in the bounding box.  So we must also determine the bottom right corner to define our bounding box, and then average all the pixels within the box to get our color.
+\n
+\n
+Let's modify our getColor() function to reflect these changes.
+\n
+\n
+\code
+Colorf cairoApp::getColor( Surface32f surface, Vec2i pixel){
+	
+	//determine the UpperLeft and BottomRight corners of the boundingbox.
+	Vec2i UL = Vec2i(pixel.x, pixel.y);
+	Vec2i LR = Vec2i(pixel.x + cellSize, pixel.y + cellSize );
+	
+	//create variables to store the total pixels and running total rgb values
+	int totalPixels = 0;
+	float rTotal = 0.0f;
+	float gTotal = 0.0f;
+	float bTotal = 0.0f;
+	
+	//here is a nested for-loop that iterates through every pixel within our bounding box
+	for(int x = int(UL.x); x <= int(LR.x); x++){
+		
+		for(int y = int(UL.y); y <= int(LR.y); y++){
+			
+			//for each pixel, get the rgb color data and store it in variables
+			Vec2i currentPixel = Vec2i(x,y);
+			float r = *surface.getDataRed(currentPixel);
+			float g = *surface.getDataGreen(currentPixel);
+			float b = *surface.getDataBlue(currentPixel);
+			
+			//keep a running count of all the values
+			rTotal += r;
+			gTotal += g;
+			bTotal += b;
+			//and a running count of how many total pixels there are
+			totalPixels++;
+		}
+	}
+	
+	//determine the average color for each channel
+	float r = rTotal / totalPixels;
+	float g = gTotal / totalPixels;
+	float b = bTotal / totalPixels;
+	
+	//return the average color
+	return Colorf( r, g, b );
+}
+\endcode
+\n
+\n
+Our new images are a much better representation of the photo, now that the color average is being taken.  Compare the left image (averaged) with the right image (not averaged).
+\n
+\n
+\image html sunset_compare.png
+\n
+\n
+\section wrapup Wrap-Up
+\n
+\n
+Below is the final code for our app.
+\n
+\n
+\code
+#include "cinder/app/AppBasic.h"
+#include "cinder/cairo/Cairo.h"
+#include "cinder/ImageIo.h"
+
+using namespace ci;
+using namespace ci::app;
+using namespace std;
+
+
+class cairoApp : public AppBasic {
+public:
+	void setup();
+	void update();
+	void draw();
+	Colorf getColor(Surface32f surface, Vec2i pixel);
+	void keyDown(KeyEvent event);
+	
+	cairo::Context ctx;
+	Surface32f surface;
+	
+	int cellSize;
+};
+
+void cairoApp::keyDown(KeyEvent event)
+{
+	if( event.getChar() == '1' ) {
+		cellSize *= 0.667f;
+	} else if (event.getChar()== '2') {
+		cellSize *= 1.5f;
+	}
+	
+	if (cellSize < 2){
+		cellSize = 2;
+	}
+	if (cellSize > getWindowWidth()){
+		cellSize = getWindowWidth();
+	}
+}
+
+Colorf cairoApp::getColor( Surface32f surface, Vec2i pixel){
+	
+	Vec2i UL = Vec2i(pixel.x, pixel.y);
+	Vec2i LR = Vec2i(pixel.x + cellSize, pixel.y + cellSize );
+	int totalPixels = 0;
+	float rTotal = 0.0f;
+	float gTotal = 0.0f;
+	float bTotal = 0.0f;
+	
+	for(int x = int(UL.x); x <= int(LR.x); x++){
+		
+		for(int y = int(UL.y); y <= int(LR.y); y++){
+			
+			Vec2i currentPixel = Vec2i(x,y);
+			float r = *surface.getDataRed(currentPixel);
+			float g = *surface.getDataGreen(currentPixel);
+			float b = *surface.getDataBlue(currentPixel);
+			
+			rTotal += r;
+			gTotal += g;
+			bTotal += b;
+			totalPixels++;
+		}
+	}
+	
+	float r = rTotal / totalPixels;
+	float g = gTotal / totalPixels;
+	float b = bTotal / totalPixels;
+	
+	return Colorf( r, g, b );
+}
+
+void cairoApp::setup()
+{
+	ctx = cairo::Context(cairo::createWindowSurface());
+	surface = Surface32f( loadImage( loadResource("sunset.png") ) );
+	cellSize = 10;
+}
+
+void cairoApp::update()
+{
+}
+
+void cairoApp::draw()
+{
+	for (int x = 0; x < getWindowWidth(); x+=cellSize) {
+		for (int y = 0; y < getWindowHeight(); y+=cellSize) {
+			Vec2i pixel = Vec2i(x,y);
+			Colorf color = getColor(surface, pixel);
+			ctx.rectangle(x,y,cellSize,cellSize);
+			ctx.setSource(color);
+			ctx.fill();
+		}
+	}
+}
+
+CINDER_APP_BASIC( cairoApp, Renderer2d )
+\endcode
+\n
+\n
+Now that we are comfortable writing our own custom functions, let's move on to Object Oriented Programming in Cairo in \ref cairoTut_5 "Chapter 5 - Cairo Custom Classes".
+*/

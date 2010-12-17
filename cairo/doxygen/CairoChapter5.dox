@@ -1,0 +1,723 @@
+/*! \page cairoTut_5 Chapter 5 - Cairo Imaging
+\section intro Introduction
+\n
+\n
+In the last lesson, the drawing we made on top of our source image was very simple.  Because we are reconstructing the image cell by cell, there's an opportunity to add more complexity to these individual cells, making our final drawing considerably more dynamic and interesting.
+\n
+\n
+In this lesson we will make a custom class for these individual cells, create numerous cells each frame that we keep track of in a list, and finally draw all of the elements in the list to the screen.  Much of this functionality is similar to what was coded in a previous lesson, Object Oriented Programming in Cinder.  If you are new to the concept of OOP in Cinder, be sure to check out that other tutorial first.
+\n
+\n
+\section prep Preparation/Clean up
+\n
+\n
+Let's begin by prepping our code from the last lesson to accommodate the new code we'll create next.  First let's delete our keydown function, both its declaration in the AppClass and its definition later on in the code.
+\n
+\n
+\code
+class cairoApp : public AppBasic {
+public:
+	void setup();
+	void update();
+	void draw();
+	Colorf getColor(Surface32f surface, Vec2i pixel);
+	//void keyDown(KeyEvent event); <-- this line of code gets deleted
+	
+	cairo::Context ctx;
+	Surface32f surface;
+	
+	int cellSize;
+};
+
+//all of the below code gets deleted
+/*
+void cairoApp::keyDown(KeyEvent event)
+{
+	if( event.getChar() == '1' ) {
+		cellSize *= 0.667f;
+	} else if (event.getChar()== '2') {
+		cellSize *= 1.5f;
+	}
+	
+	if (cellSize < 2){
+		cellSize = 2;
+	}
+	if (cellSize > getWindowWidth()){
+		cellSize = getWindowWidth();
+	}
+}
+*/
+\endcode
+\n
+\n
+Next we'll remove our code from inside our draw loop, instead just paint the screen a solid grey color.
+\n
+\n
+\code
+void cairoApp::draw()
+{
+	ctx.setSource(Colorf(0.5,0.5,0.5)); //set the active color to 50% grey
+	ctx.paint();						//paint the screen with the active color
+	
+	//all of the below code gets deleted
+	/*
+	for (int x = 0; x < getWindowWidth(); x+=cellSize) {
+		for (int y = 0; y < getWindowHeight(); y+=cellSize) {
+			Vec2i pixel = Vec2i(x,y);
+			Colorf color = getColor(surface, pixel);
+			ctx.rectangle(x,y,cellSize,cellSize);
+			ctx.setSource(color);
+			ctx.fill();
+		}
+	}
+	*/
+}
+\endcode
+\n
+\n
+Now we are ready to make a custom class.
+\n
+\n
+\section custom_class Custom Classes
+\n
+\n
+Just like we've done in previous tutorials, let's create two new files in our project folder for our custom class, Droplet.  We'll want to make a new Droplet.cpp file in our src folder, and a new Droplet.h file in our include folder.  This can be done by right clicking on a folder in Xcode and choosing add->new file.
+\n
+\n
+Once we've created our files, let's add some code to our Droplet.h file.
+\n
+\n
+\code
+#pragma once						//tell the pre-compiler to add this file only once
+#include "cinder/cairo/Cairo.h"		//include Cairo.h so we can call Cairo drawing functions
+
+using namespace ci;
+using namespace std;
+
+class Droplet {
+public:
+    //The object we are creating will be a colored circle,
+    //drawn to the screen with the color taken from the underlying pixel.
+    //We'll want our Object Constructor to get the pixel location,
+    //the cairo Context, and the color passed in as variables.
+    Droplet();
+    Droplet(Vec2i pixel, cairo::Context &ctx, Colorf average);
+    
+    //our only function is to draw the circle to the screen
+    void draw();
+    
+    
+    //our global variables are the Cairo Context,
+    //the circles x/y position, its radius, and color
+    cairo::Context mCtx;
+    Vec2f mPosition;
+    float mRadius;
+	Colorf mColor;
+		
+};
+\endcode
+\n
+\n
+Next let's add some code to our Droplet.cpp file/
+\n
+\n
+\code
+#include "Droplet.h"			//include the header file
+#include "cinder/cairo/Cairo.h" //include Cairo functions
+
+Droplet::Droplet()
+{
+}
+
+Droplet::Droplet(Vec2i pixel, cairo::Context &ctx, Colorf average)
+{	
+	mPosition = Vec2f(pixel.x, pixel.y);
+	mCtx = ctx;
+	mRadius = 12;
+	mColor = average;
+}
+
+void Droplet::draw()
+{
+	mCtx.circle(mPosition, mRadius);
+	mCtx.setSource(mColor);
+	mCtx.fill();
+}
+\endcode
+\n
+\n
+Now that we've created a custom class called Droplet, let's create a single droplet in our application and draw it to the screen.  First we'll need to include our Droplet.h file and declare a single droplet in our App Class.
+\n
+\n
+\code
+
+#include "Droplet.h"									//<-- this line got added
+
+class cairoApp : public AppBasic {
+public:
+	void setup();
+	void update();
+	void draw();
+	Colorf getColor(Surface32f surface, Vec2i pixel);
+	
+	cairo::Context ctx;
+	Surface32f surface;
+	
+	int cellSize;
+	Droplet droplet0;									//<-- this line got added
+};
+\endcode
+\n
+\n
+And next we'll create a single droplet in our setup() block of code.
+\n
+\n
+\code
+void cairoApp::setup()
+{
+	ctx = cairo::Context(cairo::createWindowSurface());
+	surface = Surface32f( loadImage( loadResource("sunset.png") ) );
+	cellSize = 10;
+	
+	//first let's grab a single pixel from the screen, in this case, the pixel at (200,200)
+	Vec2i pixel = Vec2i(200,200);
+	//next, let's get the color beneath that pixel
+	Colorf average = getColor(surface, pixel);
+	//and now let's create a single droplet, at the center pixel, with the underlying color
+	droplet0 = Droplet(pixel, ctx, average));
+}
+\endcode
+\n
+\n
+If we build and run our code now, we'll still have a grey screen.  That's because we haven't called the draw() method on our single droplet.
+
+\n
+\n
+\code
+void cairoApp::draw()
+{
+	ctx.setSource(Colorf(0.5,0.5,0.5));
+	ctx.paint();
+	droplet0.draw();
+}
+\endcode
+\n
+\n
+Now when we build and run our code, we get the below image.
+\n
+\n
+\image html droplet_1.png
+\n
+\n
+\section tuning Fine Tuning the Droplet
+\n
+\n
+Let's add a few optimizations to make the color more accurate and to make our droplet more realistic.  First, let's tweak our getColor function.  Currently it is taking the incoming pixel as the top left corner, adding the cellSize (10, for now) to both x and y to get the lower right corner, and then finding the average of all the pixels contained in that bounding box.  Because our circular droplets are getting drawn from their center point, we should adjust the bounding box so that it is aligned with the droplet's position.
+\n
+\n
+\code
+Colorf cairoApp::getColor( Surface32f surface, Vec2i pixel){
+	
+	Vec2i UL = Vec2i(pixel.x - cellSize * 0.5f, pixel.y - cellSize * 0.5f); //<-- this line got updated
+	Vec2i LR = Vec2i(pixel.x + cellSize * 0.5f, pixel.y + cellSize * 0.5f); //<-- this line got updated
+	int totalPixels = 0;
+	float rTotal = 0.0f;
+	float gTotal = 0.0f;
+	float bTotal = 0.0f;
+	
+	for(int x = int(UL.x); x <= int(LR.x); x++){
+		
+		for(int y = int(UL.y); y <= int(LR.y); y++){
+			
+			Vec2i currentPixel = Vec2i(x,y);
+			float r = *surface.getDataRed(currentPixel);
+			float g = *surface.getDataGreen(currentPixel);
+			float b = *surface.getDataBlue(currentPixel);
+			
+			rTotal += r;
+			gTotal += g;
+			bTotal += b;
+			totalPixels++;
+		}
+	}
+	
+	float r = rTotal / totalPixels;
+	float g = gTotal / totalPixels;
+	float b = bTotal / totalPixels;
+	
+	return Colorf( r, g, b );
+}
+\endcode
+\n
+\n
+Let's also add a drop shadow beneath our droplet so that it stands out from the background. We'll make this change to the code in our Droplet::draw() function.
+\n
+\n
+\code
+void Droplet::draw()
+{
+	//we want our shadow to be slightly offset from our original
+	Vec2f offset = Vec2f(0.5f,0.5f);
+	//create a cairo graident
+	cairo::GradientRadial gradient( mPosition + offset, mRadius, mPosition + offset, mRadius * 1.2f );
+	//set the first color to be a darker version of the current color
+	gradient.addColorStop(0, ColorAf(mColor.r * 0.5f, mColor.g * 0.5f, mColor.b * 0.5f, 0.5f) );
+	//set the second color to be transparent
+	gradient.addColorStop(1, ColorAf(mColor.r * 0.5f, mColor.g * 0.5f, mColor.b * 0.5f, 0) );
+	//make the gradient the active color
+	mCtx.setSource(gradient);
+	//define a circular path
+	mCtx.circle(mPosition + offset, mRadius * 1.2f);
+	//fill the active path with the active color
+	mCtx.fill();
+	
+	mCtx.circle(mPosition, mRadius);
+	mCtx.setSource(mColor);
+	mCtx.fill();
+}
+\endcode
+\n
+\n
+Although the difference is subtle, now our Droplet looks great.
+\n
+\n
+\image html droplet_2.png
+\n
+\n
+\section multiples Multiples
+\n
+\n
+The beauty of Object Oriented Programming is that once you've put in the work to create a single object, you can create many multiples of the object without much additional effort.  Rather than creating a single droplet at a single location, instead let's create lots of random droplets all over the screen, and keep track of them all with an STL list.
+\n
+\n
+First let's add some additional include statements, and create a list to store our droplets.
+\n
+\n
+\code
+#include "cinder/app/AppBasic.h"
+#include "cinder/cairo/Cairo.h"
+#include "cinder/ImageIo.h"
+#include "Droplet.h"
+#include "cinder/Rand.h"		//<-- include Rand.h so we can generate random numbers
+#include <list>					//<-- include STL lists
+
+using namespace ci;
+using namespace ci::app;
+using namespace std;
+
+
+class cairoApp : public AppBasic {
+public:
+	void setup();
+	void update();
+	void draw();
+	Colorf getColor(Surface32f surface, Vec2i pixel);
+	
+	cairo::Context ctx;
+	Surface32f surface;
+	
+	int cellSize;
+	// Droplet droplet0;  <-- this line is no longer needed
+	list<Droplet> droplets; //<-- here is the declaration of our droplet list
+};
+\endcode
+
+\n
+\n
+Next let's take the steps of making a new droplet and add them into a function called makeDroplet.
+\n
+\n
+\code
+class cairoApp : public AppBasic {
+public:
+	void setup();
+	void update();
+	void draw();
+	Colorf getColor(Surface32f surface, Vec2i pixel);
+	void makeDroplet();									//<-- this line gets added
+	
+	cairo::Context ctx;
+	Surface32f surface;
+	
+	int cellSize;
+	Droplet droplet0;
+	list<Droplet> droplets;
+};
+
+//this entire block of code gets added
+void cairoApp::makeDroplet()
+{
+	//create random values for x and y
+	int x = Rand::randInt(getWindowWidth());
+	int y = Rand::randInt(getWindowHeight());
+	//store the values in a Vec2i
+	Vec2i pixel = Vec2i(x, y);
+	//get the average color at the pixel location
+	Colorf average = getColor(surface, pixel);
+	//add a droplet to the end of our list
+	droplets.push_back(Droplet(pixel, ctx, average));
+}
+\endcode
+
+\n
+\n
+Now let's create 10 new droplets as the application starts, 10 more on each update(), and let's draw each one to the screen in our draw loop.
+\n
+\n
+\code
+void cairoApp::setup()
+{
+	ctx = cairo::Context(cairo::createWindowSurface());
+	surface = Surface32f( loadImage( loadResource("sunset.png") ) );
+	cellSize = 10;
+	
+	//make 10 new droplets	
+	for(int i = 0; i < 10; i++){
+		makeDroplet();	
+	}
+	
+	/*the below code is no longer needed
+	Vec2i pixel = Vec2i(200, 200);
+	Colorf average = getColor(surface, pixel);
+	droplet0 = Droplet(pixel, ctx, average);
+	*/
+}
+
+void cairoApp::update()
+{
+	//make 10 new droplets
+	for(int i = 0; i < 10; i++){
+		makeDroplet();	
+	}
+}
+
+void cairoApp::draw()
+{
+	ctx.setSource(Colorf(0.5,0.5,0.5));
+	ctx.paint();
+	
+	//iterate through the list of droplets and call the draw method on each one
+	for( list<Droplet>::iterator i = droplets.begin(); i != droplets.end(); ++i ) {
+        i->draw();
+    }
+	
+	//droplet0.draw();  <-- this line is no longer needed
+}
+\endcode
+\n
+\n
+Now when we build and run our code, we get a great animation of our individual droplets as they are drawn to the screen. 
+\n
+\n
+
+\htmlonly
+<iframe src="https://dr0pb0x.s3.amazonaws.com/TBG/droplet.mov" width="680" height="575" frameborder="0"></iframe>
+\endhtmlonly
+\n
+\n
+\section adjustments Adjustments
+\n
+\n
+One thing you may have noticed is that the colors along the top edge are getting distorted.  This is because the getColor function is trying to average pixels that don't exist.  Let's make a slight change to our function to correct this.
+\n
+\n
+\code
+Colorf cairoApp::getColor( Surface32f surface, Vec2i pixel){
+	
+	Vec2i UL = Vec2i(pixel.x - cellSize * 0.5f, pixel.y - cellSize * 0.5f);
+	Vec2i LR = Vec2i(pixel.x + cellSize * 0.5f, pixel.y + cellSize * 0.5f );
+	
+	//this if statement fixes our problem
+	if(UL.y < 0){
+		UL.y = 0;
+	}
+	
+	...
+}
+\endcode
+
+
+\n
+\n
+In addition, the more droplets get drawn per frame, the slower the app runs. It could make sense to put a cap on the total droplet number.  With our current screen size of 640 x 480 and our current droplet radius of 12, it seems like around 5000 droplets is when the screen gets saturated.  Let's add some code to limit our list size.
+
+\n
+\n
+\code
+void cairoApp::update()
+{	
+	//make 10 droplets
+	for(int i = 0; i < 10; i++){
+		makeDroplet();
+		
+		//if there are more than 5000 already, delete one for every new one that is made
+		if(droplets.size() >= 5000){
+			droplets.pop_front();
+		}
+	}
+}
+\endcode
+\n
+\n
+Now we have a nice looking app that can run indefinitely.
+\n
+\n
+\htmlonly
+<iframe src="https://dr0pb0x.s3.amazonaws.com/TBG/droplet2.mov" width="680" height="575" frameborder="0"></iframe>
+\endhtmlonly
+\n
+\n
+\section finishing Finishing Touches
+\n
+\n
+Assuming we run the app a few times and decide that we're less interested in the process of watching the image slowly getting built up, but instead are merely interested in the final image.  We can make some adjustments to our code so that all of the calculations are done up front, and the finished image gets spit out for us rather quickly.
+\n
+\n
+Currently our app is drawing only 10 droplets at a time.  If we know ahead of time how many droplets we want, we could just have it draw all of them at once.  In our current app, the screen size for 640 x 480, for a total of 307,200 total pixels.  Our droplets have a radius of 12, so it's diameter is 24.  If our entire screen was divided into 24*24 squares, we need 533 squares to fill our screen (640 * 480 / 24 / 24 = 533.33).  Because the droplets overlap, let's multiply this number by 12, to get 6400 total droplets.
+\n
+\n
+Let's update our code so that it draws all 6400 droplets at once.
+\n
+\n
+\code
+void cairoApp::setup()
+{
+	ctx = cairo::Context(cairo::createWindowSurface());
+	surface = Surface32f( loadImage( loadResource("sunset.png") ) );
+	cellSize = 10;
+	
+	for(int i = 0; i < 6400; i++){ //<-- this line of code gets updated
+		makeDroplet();	
+	}
+}
+
+void cairoApp::update()
+{	
+	/* all of this code gets deleted or commented out
+	for(int i = 0; i < 10; i++){
+		makeDroplet();
+		if(droplets.size() >= 5000){
+			droplets.pop_front();
+		}
+	}
+	 */
+}
+\endcode
+\n
+\n
+Now our app outputs a final image rather quickly.
+\n
+\n
+\image html droplet_3.png
+\n
+\n
+Similar to our app in the last chapter, it would be nice if we could change the size of the droplets using keyboard commands.  We can easily re-use our code to modify the cellSize variable using the 1 and 2 keys on the keyboard.
+\n
+\n
+\code
+class cairoApp : public AppBasic {
+public:
+	void setup();
+	void update();
+	void draw();
+	Colorf getColor(Surface32f surface, Vec2i pixel);
+	void makeDroplet();
+	void keyDown(KeyEvent event);   //<-- this line gets added
+	
+	cairo::Context ctx;
+	Surface32f surface;
+	
+	int cellSize;
+	Droplet droplet0;
+	list<Droplet> droplets;
+};
+
+//this whole block gets added
+void cairoApp::keyDown(KeyEvent event)
+{
+	if( event.getChar() == '1' ) {
+		cellSize -= 2;
+	} else if (event.getChar()== '2') {
+		cellSize += 2;
+	}
+	
+	if (cellSize < 2){
+		cellSize = 2;
+	}
+	if (cellSize > getWindowWidth()){
+		cellSize = getWindowWidth();
+	}
+}
+\endcode
+\n
+\n
+Now when we press the 1 and 2 keys on the keyboard, it changes the size of our cellSize variable.  Unfortunately, changing this variable will not change the image on our screen at all.  First we need to link the size of the droplets to this variable, and second, we need to redraw all of our droplets if a key command is issued.
+\n
+\n
+Let's start by passing the cellSize variable into our droplet upon creation.  Note that this requires us to change code is several places: both in the Droplet.h and Droplet.cpp files, as well as in our makeDroplet() function.
+\n
+\n
+\code
+void cairoApp::makeDroplet()
+{
+	int x = Rand::randInt(getWindowWidth());
+	int y = Rand::randInt(getWindowHeight());
+	Vec2i pixel = Vec2i(x, y);
+	Colorf average = getColor(surface, pixel);
+	//the below line was updated to include cellSize as an argument
+	droplets.push_back(Droplet(pixel, ctx, average, cellSize));	
+}
+
+/* --------------- below code goes in the Droplet.h file ------------------- */
+
+class Droplet {
+public:
+
+    Droplet();
+    // the below line was updated to add the cellSize argument
+    Droplet(Vec2i pixel, cairo::Context &ctx, Colorf average, int cellSize);
+    
+    void draw();
+    
+    cairo::Context mCtx;
+    Vec2f mPosition;
+    float mRadius;
+	Colorf mColor;
+	
+};
+
+/* --------------- below code goes in the Droplet.cpp file ------------------- */
+
+//the below line gets the cellSize argument added
+Droplet::Droplet(Vec2i pixel, cairo::Context &ctx, Colorf average, int cellSize)
+{	
+	mPosition = Vec2f(pixel.x, pixel.y);
+	mCtx = ctx;
+	mRadius = cellSize * 0.5f;  //<-- this line got updated
+	mColor = average;
+}
+
+void Droplet::draw()
+{
+	Vec2f offset = Vec2f(mRadius * 0.05f, mRadius * 0.05f); //<-- this line got updated
+	cairo::GradientRadial gradient( mPosition + offset, mRadius, mPosition + offset, mRadius * 1.2f );
+	gradient.addColorStop(0, ColorAf(mColor.r * 0.5f, mColor.g * 0.5f, mColor.b * 0.5f, 0.5f) );
+	gradient.addColorStop(1, ColorAf(mColor.r * 0.5f, mColor.g * 0.5f, mColor.b * 0.5f, 0) );
+	mCtx.setSource(gradient);
+	mCtx.circle(mPosition + offset, mRadius * 1.2f);
+	mCtx.fill();
+	
+	mCtx.circle(mPosition, mRadius);
+	mCtx.setSource(mColor);
+	mCtx.fill();
+}
+\endcode
+\n
+\n
+Next we need to make a small adjustment to the keyDown function, so that our droplets list gets erased and rebuilt each time
+\n
+\n
+\code
+void cairoApp::keyDown(KeyEvent event)
+{
+	if( event.getChar() == '1' ) {
+		cellSize -= 2;
+	} else if (event.getChar()== '2') {
+		cellSize += 2;
+	}
+	
+	if (cellSize < 2){
+		cellSize = 2;
+	}
+	if (cellSize > getWindowWidth()){
+		cellSize = getWindowWidth();
+	}
+	
+	//delete all of the contents of the list
+	droplets.clear();
+	
+	//create new droplets
+	for(int i = 0; i < 6400; i++){
+		makeDroplet();	
+	}
+}
+\endcode
+\n
+\n
+Our app now changes as we press the 1 and 2 keys, however, the same number of droplets are being drawn each time.  Let's replace 6400 with a variable, and let's calculate the variable's value dynamically.  We'll need to make a new function called countCalculator.
+\n
+\n
+\code
+class cairoApp : public AppBasic {
+public:
+	void setup();
+	void update();
+	void draw();
+	Colorf getColor(Surface32f surface, Vec2i pixel);
+	void makeDroplet();
+	void keyDown(KeyEvent event);
+	int countCalculator(); //this function returns an int
+	
+	cairo::Context ctx;
+	Surface32f surface;
+	
+	int cellSize;
+	Droplet droplet0;
+	list<Droplet> droplets;
+};
+
+//below is our new function
+int cairoApp::countCalculator()
+{
+	int width = getWindowWidth();
+	int height = getWindowHeight();	
+	int dropletCount = floor(width * height / cellSize / cellSize * 12.0f);
+	return dropletCount;
+}
+\endcode
+\n
+\n
+Now we'll want to call the countCalculator while we are making all of our droplets.
+\n
+\n
+\code
+void cairoApp::keyDown(KeyEvent event)
+{
+	if( event.getChar() == '1' ) {
+		cellSize -= 2;
+	} else if (event.getChar()== '2') {
+		cellSize += 2;
+	}
+	
+	if (cellSize < 2){
+		cellSize = 2;
+	}
+	if (cellSize > getWindowWidth()){
+		cellSize = getWindowWidth();
+	}
+	
+	droplets.clear();
+	
+	for(int i = 0; i < countCalculator(); i++){  //this line gets updated
+		makeDroplet();	
+	}
+}
+
+void cairoApp::setup()
+{
+	ctx = cairo::Context(cairo::createWindowSurface());
+	surface = Surface32f( loadImage( loadResource("sunset.png") ) );
+	cellSize = 10;
+	
+	for(int i = 0; i < countCalculator(); i++){ //this line gets updated
+		makeDroplet();	
+	}
+}
+\endcode
+\n
+\n
+Now we've got a great looking app that allows us to fine-tune our settings until they are perfect.
+\n
+\n
+\image html droplet_4.png
+*/

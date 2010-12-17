@@ -1,0 +1,122 @@
+// !$*UTF8*$!
+{
+	00BAE6590E7ED9C10018A608 /* CairoApp.cpp */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {894, 962}}";
+			sepNavSelRange = "{0, 1753}";
+			sepNavVisRange = "{0, 864}";
+		};
+	};
+	29B97313FDCFA39411CA2CEA /* Project object */ = {
+		activeBuildConfigurationName = Debug;
+		activeExecutable = 4FC3F12112BBC24B00D1A9F9 /* Cairo */;
+		activeTarget = 8D1107260486CEB800E47090 /* Cairo */;
+		codeSenseManager = 4FC3F13E12BBC24F00D1A9F9 /* Code sense */;
+		executables = (
+			4FC3F12112BBC24B00D1A9F9 /* Cairo */,
+		);
+		perUserDictionary = {
+			PBXConfiguration.PBXFileTableDataSource3.PBXFileTableDataSource = {
+				PBXFileTableDataSourceColumnSortingDirectionKey = "-1";
+				PBXFileTableDataSourceColumnSortingKey = PBXFileDataSource_Filename_ColumnID;
+				PBXFileTableDataSourceColumnWidthsKey = (
+					20,
+					619,
+					20,
+					48,
+					43,
+					43,
+					20,
+				);
+				PBXFileTableDataSourceColumnsKey = (
+					PBXFileDataSource_FiletypeID,
+					PBXFileDataSource_Filename_ColumnID,
+					PBXFileDataSource_Built_ColumnID,
+					PBXFileDataSource_ObjectSize_ColumnID,
+					PBXFileDataSource_Errors_ColumnID,
+					PBXFileDataSource_Warnings_ColumnID,
+					PBXFileDataSource_Target_ColumnID,
+				);
+			};
+			PBXPerProjectTemplateStateSaveDate = 314297372;
+			PBXWorkspaceStateSaveDate = 314297372;
+		};
+		perUserProjectItems = {
+			4FC3F24212BBCCE000D1A9F9 /* PBXTextBookmark */ = 4FC3F24212BBCCE000D1A9F9 /* PBXTextBookmark */;
+			4FC3F24E12BBCD3700D1A9F9 /* PBXTextBookmark */ = 4FC3F24E12BBCD3700D1A9F9 /* PBXTextBookmark */;
+		};
+		sourceControlManager = 4FC3F13D12BBC24F00D1A9F9 /* Source Control */;
+		userBuildSettings = {
+		};
+	};
+	4FC3F12112BBC24B00D1A9F9 /* Cairo */ = {
+		isa = PBXExecutable;
+		activeArgIndices = (
+		);
+		argumentStrings = (
+		);
+		autoAttachOnCrash = 1;
+		breakpointsEnabled = 0;
+		configStateDict = {
+		};
+		customDataFormattersEnabled = 1;
+		dataTipCustomDataFormattersEnabled = 1;
+		dataTipShowTypeColumn = 1;
+		dataTipSortType = 0;
+		debuggerPlugin = GDBDebugging;
+		disassemblyDisplayState = 0;
+		dylibVariantSuffix = "";
+		enableDebugStr = 1;
+		environmentEntries = (
+		);
+		executableSystemSymbolLevel = 0;
+		executableUserSymbolLevel = 0;
+		libgmallocEnabled = 0;
+		name = Cairo;
+		savedGlobals = {
+		};
+		showTypeColumn = 0;
+		sourceDirectories = (
+		);
+	};
+	4FC3F13D12BBC24F00D1A9F9 /* Source Control */ = {
+		isa = PBXSourceControlManager;
+		fallbackIsa = XCSourceControlManager;
+		isSCMEnabled = 0;
+		scmConfiguration = {
+			repositoryNamesForRoots = {
+				"" = "";
+			};
+		};
+	};
+	4FC3F13E12BBC24F00D1A9F9 /* Code sense */ = {
+		isa = PBXCodeSenseManager;
+		indexTemplatePath = "";
+	};
+	4FC3F24212BBCCE000D1A9F9 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 00BAE6590E7ED9C10018A608 /* CairoApp.cpp */;
+		name = "CairoApp.cpp: 21";
+		rLen = 0;
+		rLoc = 335;
+		rType = 0;
+		vrLen = 1182;
+		vrLoc = 0;
+	};
+	4FC3F24E12BBCD3700D1A9F9 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 00BAE6590E7ED9C10018A608 /* CairoApp.cpp */;
+		name = "CairoApp.cpp: 1";
+		rLen = 1753;
+		rLoc = 0;
+		rType = 0;
+		vrLen = 864;
+		vrLoc = 0;
+	};
+	8D1107260486CEB800E47090 /* Cairo */ = {
+		activeExec = 0;
+		executables = (
+			4FC3F12112BBC24B00D1A9F9 /* Cairo */,
+		);
+	};
+}

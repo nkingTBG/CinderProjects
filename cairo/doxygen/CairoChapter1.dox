@@ -1,0 +1,83 @@
+/*! \page cairoTut_1 Chapter 1 - A Cairo Template
+\section intro Introduction
+In nearly every Cinder project you've seen up until this point, the last line of code in your project's .cpp file is:
+\n
+\n
+\code
+CINDER_APP_BASIC( p5drawingApp, RendererGl )
+\endcode
+\n
+\n
+This line instructs the application to render using the default Open GL Renderer.  In this family of tutorials, we'll be rendering using Cairo, so we'll need to start from a completely new application template.  Much of the structure is the same as what you are already familiar with, but there are a few nuances worth pointing out.
+\n
+\n
+\section template Cairo Template
+Starting with an entirely clean slate, here is the most basic Cairo project you could ever have:
+\code
+#include "cinder/app/AppBasic.h"
+#include "cinder/cairo/Cairo.h"
+using namespace ci;
+using namespace ci::app;
+using namespace std;
+
+
+class cairoApp : public AppBasic {
+public:
+	void setup();
+	void update();
+	void draw();
+};
+
+void cairoApp::setup()
+{
+}
+
+void cairoApp::update()
+{
+}
+
+void cairoApp::draw()
+{
+	cairo::Context ctx( cairo::createWindowSurface() );	
+	ctx.setSource( Colorf(0,0,0) );
+	ctx.paint();
+}
+
+CINDER_APP_BASIC( cairoApp, Renderer2d )
+\endcode
+\n
+\n
+So what is actually different?  In the top bit of code we are including the Cairo library.
+\n
+\n
+\code
+#include "cinder/cairo/Cairo.h"
+\endcode
+\n
+\n
+The biggest change is in our draw() loop.  Within a standard barebones Cinder template, we would simply be calling the gl::clear() method to draw black to our screen.  But using Cairo, we must first create our Cairo Context, the primary object to which all of our Cairo graphics get drawn.  You can name this object anything you'd like, but it is common convention to call it "ctx".  Think of this as the sheet of paper or canvas that we are creating artwork on.  Every Cairo function we call from this point on will be a member function of the ctx Context object.  To set the screen to black, we first call ctx.setSource() and then call ctx.paint().  This simply defines the active color to be black and then paints it to the screen.
+\n
+\n
+\code
+void cairoApp::draw()
+{
+	cairo::Context ctx( cairo::createWindowSurface() );	
+	ctx.setSource( Colorf(0,0,0) );
+	ctx.paint();
+}
+\endcode
+\n
+\n
+Finally, our last line of code needs to reflect our desire to send all of our draw data to the Cairo renderer, rather than to the Open Gl renderer.
+\n
+\n
+\code
+CINDER_APP_BASIC( cairoApp, Renderer2d )
+\endcode
+\n
+\n
+If you build and run this code, all you will see is a black screen.  But it is rendering that black screen in Cairo!  Yay!
+\n
+\n
+Should we want to draw any additional elements to our screen, we can add addition functions to our draw() loop.  We'll do this and more in the next tutorial, \ref cairoTut_2 "Chapter 2 - Drawing with Cairo".
+*/

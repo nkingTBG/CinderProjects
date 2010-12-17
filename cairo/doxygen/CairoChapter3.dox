@@ -1,0 +1,372 @@
+/*! \page cairoTut_3 Chapter 3 - Cairo Functions
+\section intro Introduction
+\n
+\n
+In the previous lesson, we used individual steps to build up a drawing.  Despite the finished drawing being somewhat simple, there were numerous steps involved.  For most artists, illustrating is not something to be done on the command line, but instead to be done with a tablet, mouse, or other input device.  But one of the strengths of using programming to draw is the ability to do the same operation over and over with great speed and precision.  In this lesson, we'll take a look at using recursive functions to make interesting visual effects.  
+\n
+\n
+We'll begin with our basic Cairo Template:
+\n
+\n
+\code
+#include "cinder/app/AppBasic.h"
+#include "cinder/cairo/cairo.h"
+using namespace ci;
+using namespace ci::app;
+using namespace std;
+
+class cairoApp : public AppBasic {
+public:
+	void setup();
+	void update();
+	void draw();
+};
+
+void cairoApp::setup()
+{	
+}
+
+void cairoApp::update()
+{
+}
+
+void cairoApp::draw()
+{
+	cairo::Context ctx( cairo::createWindowSurface() );
+	ctx.setSource( Colorf(0,0,0) );
+	ctx.paint();
+}
+
+CINDER_APP_BASIC( cairoApp, Renderer2d )
+\endcode
+\n
+\n
+\section global Making the Context Global
+\n
+\n
+Each time you call a Cairo function, you have to call it as a child of a cairo context.  Rather than creating our context at the start of our draw() loop, instead lets create a global variable so that our ctx context will be available to any block of code in our program.  (if we did not do this, we'd have pass the context into each one of our functions, which is less efficient.)
+\n
+\n
+To do this, we'll need to declare our ctx variable in the App Class and then define it in the setup() function.
+\n
+\n
+\code
+#include "cinder/app/AppBasic.h"
+#include "cinder/cairo/cairo.h"
+using namespace ci;
+using namespace ci::app;
+using namespace std;
+
+class cairoApp : public AppBasic {
+public:
+	void setup();
+	void update();
+	void draw();
+	//here we declare the ctx variable, of type cairo::Context
+	cairo::Context ctx;
+};
+
+void cairoApp::setup()
+{	
+	//here we are initializing the variable, creating a window surface to draw onto
+	ctx = cairo::Context( cairo::createWindowSurface() );
+}
+
+void cairoApp::update()
+{
+}
+
+void cairoApp::draw()
+{
+	//the old ctx line of code was removed from here
+	ctx.setSource( Colorf(0,0,0) );
+	ctx.paint();
+}
+
+CINDER_APP_BASIC( cairoApp, Renderer2d )
+\endcode
+\n
+\n
+\section gradient Filling with a Gradient
+\n
+\n
+Next lets make a rectangle path and fill it with a gradient, transitioning between two colors.  To do this we'll need to call on the GradientLinear class.
+\n
+\n
+\code
+void cairoApp::draw()
+{
+	ctx.setSource( Colorf(0,0,0) );
+	ctx.paint();
+	
+	//Create a Cinder Rectf data object that stores the four corner points of a rectangle
+	Rectf rect = Rectf (0,0,getWindowWidth(), getWindowHeight() );
+	
+	//define a rectangular cairo path from our four points
+	ctx.rectangle( rect.x1, rect.y1, rect.x2 - rect.x1, rect.y2 - rect.y1 );
+	
+	//create a GradientLinear object called "gradient"
+	//as arguments, it takes two points, defining the start and end of the gradient direction
+	cairo::GradientLinear gradient( Vec2f( rect.x1, rect.y1 ), Vec2f( rect.x2, rect.y1 ) );
+	
+	//define the first gradient color
+	gradient.addColorStop(0, Colorf(0.1, 0, 0.2) );
+	
+	//define the second gradient color
+	gradient.addColorStop(1, Colorf(1, 0, 1) );
+	
+	//set the gradient to be the active color
+	ctx.setSource(gradient);
+	
+	//fill the active path with the active color
+	ctx.fill();
+}
+\endcode
+\n
+\n
+Now when we build and run the code, we see a nice smooth gradient painted to our window.
+\n
+\n
+\image html gradient1.png
+\n
+\n
+\section function Moving the Gradient to a Function
+\n
+\n
+Next let's move all of the steps in making the gradient into a function.  We'll need to declare and define the function, and call the function from inside our draw loop.
+\n
+\n
+\code
+class cairoApp : public AppBasic {
+public:
+	void setup();
+	void update();
+	void draw();
+	void drawGradient(); //<-- here we've declared our new function
+	cairo::Context ctx;
+	Rectf rect;			 //now we'll want our rect to be a global variable
+};
+
+void cairoApp::setup()
+{	
+	ctx = cairo::Context( cairo::createWindowSurface() );
+}
+
+void cairoApp::update()
+{
+	//we'll want to make sure that our rect starts out full-size at the
+	//beginning of each frame (this will make sense in a minute)
+	rect = Rectf (0,0,getWindowWidth(), getWindowHeight() );
+}
+
+void cairoApp::draw()
+{
+	ctx.setSource( Colorf(0,0,0) );
+	ctx.paint();
+	drawGradient(); //here we call our function
+}
+
+//below we define our function with all of the moved code
+void cairoApp::drawGradient()
+{
+	ctx.rectangle( rect.x1, rect.y1, rect.x2 - rect.x1, rect.y2 - rect.y1 );
+	cairo::GradientLinear gradient( Vec2f( rect.x1, rect.y1 ), Vec2f( rect.x2, rect.y1 ) );
+	gradient.addColorStop(0, Colorf(0.1, 0, 0.2) );
+	gradient.addColorStop(1, Colorf(1, 0, 1) );
+	ctx.setSource(gradient);
+	ctx.fill();
+}
+\endcode
+\n
+\n
+If we build and run our code now, it will look exactly the same as it did a moment before.  But now that we have a function doing the drawing work for us, we can make some more interesting images.
+\n
+\n
+\section recursion Recursion
+\n
+\n
+Recursion is when a function is included within its own definition.  Another way to put this is that at end of a recursive function, the function is called again.  In programming, this is a convenient way to perform the same function over and over and over, until some condition is met.  (note that if you don't end the recursive loop with some condition, it will run indefinitely, causing your application to become unresponsive.) 
+Instead of simply drawing the gradient to the screen once, let's have our application do this over and over, each time reducing the size of the rectangle slightly.
+\n
+\n
+With just a few additional lines of code in our function, we'll have a considerably more sophisticated application.
+\n
+\n
+\code
+void cairoApp::drawGradient()
+{
+	ctx.rectangle( rect.x1, rect.y1, rect.x2 - rect.x1, rect.y2 - rect.y1 );
+	cairo::GradientLinear gradient( Vec2f( rect.x1, rect.y1 ), Vec2f( rect.x2, rect.y1 ) );
+	gradient.addColorStop(0, Colorf(0.1, 0, 0.2) );
+	gradient.addColorStop(1, Colorf(1, 0, 1) );
+	ctx.setSource(gradient);
+	ctx.fill();
+	
+	//reduce the size of the rectangle
+	rect.x1 += 12;
+	rect.y1 += 9;
+	rect.x2 -= 12;
+	rect.y2 -= 9;
+	
+	//if the rectangle size is bigger than 1
+	if(rect.x2 - rect.x1 >= 1 && rect.y2 - rect.y1 >= 1){
+		//then call the drawGradient function again
+		drawGradient();
+	}
+}
+\endcode
+\n
+\n
+Now when we build and run our code, we get an image with a recursive pattern: the gradient gets smaller and smaller, creating an illusion of depth.
+\n
+\n
+\image html gradient2.png
+\n
+\n
+Next lets change the direction of the gradient each frame, so that the gradient fill is rotated 90 each time.  We can do this using modulo and a loop counter, changing the gradient settings based on what our count is.
+\n
+\n
+\code
+class cairoApp : public AppBasic {
+public:
+	void setup();
+	void update();
+	void draw();
+	void drawGradient();
+	cairo::Context ctx;
+	Rectf rect;
+	int count; //<-- declare the count variable
+};
+
+void cairoApp::update()
+{
+	rect = Rectf (0,0,getWindowWidth(), getWindowHeight() );
+	count = 0; //<-- reset the count variable to zero at the start of each frame
+}
+
+void cairoApp::drawGradient()
+{
+	ctx.rectangle( rect.x1, rect.y1, rect.x2 - rect.x1, rect.y2 - rect.y1 );
+	cairo::GradientLinear gradient( Vec2f( rect.x1, rect.y1 ), Vec2f( rect.x2, rect.y1 ) );
+	
+	//if the frame count is 1,5,9,13...
+	if(count % 4 == 1){
+		gradient = cairo::GradientLinear( Vec2f( rect.x2, rect.y1 ), Vec2f( rect.x2, rect.y2 ) );
+	}
+	//if the frame count is 2,6,10,14...
+	if(count % 4 == 2){
+		gradient = cairo::GradientLinear( Vec2f( rect.x2, rect.y2 ), Vec2f( rect.x1, rect.y2 ) );
+	}
+	//if the frame count is 3,7,11,15...
+	if(count % 4 == 3){
+		gradient = cairo::GradientLinear( Vec2f( rect.x1, rect.y2 ), Vec2f( rect.x1, rect.y1 ) );
+	}
+	
+	gradient.addColorStop(0, Colorf(0.1, 0, 0.2) );
+	gradient.addColorStop(1, Colorf(1, 0, 1) );
+	ctx.setSource(gradient);
+	ctx.fill();
+	rect.x1 += 12;
+	rect.y1 += 9;
+	rect.x2 -= 12;
+	rect.y2 -= 9;
+	if(rect.x2 - rect.x1 >= 1 && rect.y2 - rect.y1 >= 1){
+		count++; //<-- we need to increment the count with each recursive step
+		drawGradient();
+	}
+}
+\endcode
+\n
+\n
+Now our application produces an image like this:
+\n
+\n
+\image html gradient3.png
+\n
+\n
+\section multiples Multiples
+\n
+\n
+Now that we have our drawing making an interesting pattern, we can push the complexity of our image even further by multiplying the number of patterned tiles we use.  Currently our application is entirely based on a single set of points that make up our starting rectangle.  Instead, lets create a multitude of rectangles using a nested for-loop.
+\n
+\n
+\code
+class cairoApp : public AppBasic {
+public:
+	void setup();
+	void update();
+	void draw();
+	void drawGradient(Rectf rect); //<-- we'll pass a rect into the function
+	cairo::Context ctx;
+	Rectf rect0;
+	int count;
+	float tileSize;				   //<-- this variable is new
+};
+
+void cairoApp::update()
+{
+	tileSize = 32;		           //<-- here the tile size is defined.
+	//note that the rect assignment and count assignment have both been moved into the for loop below
+}
+
+void cairoApp::draw()
+{
+	ctx.setSource( Colorf(0,0,0) );
+	ctx.paint();
+	
+	int tileCountX = ceil(getWindowWidth()/tileSize);  //<-- first we'll calculate how many tiles there are across
+	int tileCountY = ceil(getWindowHeight()/tileSize); //<-- and how many go down
+	
+	//in this for loop, we iterate through all of the possible x/y combinations
+	//and we pass a unique rectangle to the drawGradient function each time.
+	for (int x = 0; x <= tileCountX; x++) {
+		for(int y = 0; y <= tileCountY; y++){
+			rect0 = Rectf(x*tileSize - tileSize/2, y*tileSize - tileSize/2, x*tileSize + tileSize/2, y*tileSize + tileSize/2);
+			count = 0;
+			drawGradient(rect0);
+		}
+	}
+}
+
+//the key change in the drawGradient function is that it now gets a Rect
+//passed into it each time it runs
+void cairoApp::drawGradient(Rectf rect) //<-- this got modified
+{
+	ctx.rectangle( rect.x1, rect.y1, rect.x2 - rect.x1, rect.y2 - rect.y1 );
+	cairo::GradientLinear gradient( Vec2f( rect.x1, rect.y1 ), Vec2f( rect.x2, rect.y1 ) );
+	if(count % 4 == 1){
+		gradient = cairo::GradientLinear( Vec2f( rect.x2, rect.y1 ), Vec2f( rect.x2, rect.y2 ) );
+	}
+	if(count % 4 == 2){
+		gradient = cairo::GradientLinear( Vec2f( rect.x2, rect.y2 ), Vec2f( rect.x1, rect.y2 ) );
+	}
+	if(count % 4 == 3){
+		gradient = cairo::GradientLinear( Vec2f( rect.x1, rect.y2 ), Vec2f( rect.x1, rect.y1 ) );
+	}
+	gradient.addColorStop(0, Colorf(0.1, 0, 0.2) );
+	gradient.addColorStop(1, Colorf(1, 0, 1) );
+	ctx.setSource(gradient);
+	ctx.fill();
+	rect.x1 += 1; 		//<-- here the increment value was changed to 1
+	rect.y1 += 1; 		//<-- here the increment value was changed to 1
+	rect.x2 -= 1; 		//<-- here the increment value was changed to 1
+	rect.y2 -= 1; 		//<-- here the increment value was changed to 1
+	if(rect.x2 - rect.x1 > 1 && rect.y2 - rect.y1 > 1){
+		count++;
+		drawGradient(rect);
+	}
+}
+\endcode
+\n
+\n
+Now our application produces an image like this:
+\n
+\n
+\image html gradient4.png
+\n
+\n
+\section wrapup Wrap-Up
+\n
+\n
+Now that we are comfortable writing our own custom functions, let's move on to working with images in Cairo in \ref cairoTut_4 "Chapter 4 - Cairo Imaging".
+*/
