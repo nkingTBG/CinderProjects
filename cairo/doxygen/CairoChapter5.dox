@@ -1,4 +1,4 @@
-/*! \page cairoTut_5 Chapter 5 - Cairo Imaging
+/*! \page cairoTut_5 Chapter 5 - Cairo Custom Classes
 \section intro Introduction
 \n
 \n
@@ -184,7 +184,7 @@ void cairoApp::setup()
 	//next, let's get the color beneath that pixel
 	Colorf average = getColor(surface, pixel);
 	//and now let's create a single droplet, at the center pixel, with the underlying color
-	droplet0 = Droplet(pixel, ctx, average));
+	droplet0 = Droplet(pixel, ctx, average);
 }
 \endcode
 \n
@@ -398,8 +398,8 @@ void cairoApp::draw()
 	
 	//iterate through the list of droplets and call the draw method on each one
 	for( list<Droplet>::iterator i = droplets.begin(); i != droplets.end(); ++i ) {
-        i->draw();
-    }
+		i->draw();
+	}
 	
 	//droplet0.draw();  <-- this line is no longer needed
 }
@@ -427,9 +427,18 @@ Colorf cairoApp::getColor( Surface32f surface, Vec2i pixel){
 	Vec2i UL = Vec2i(pixel.x - cellSize * 0.5f, pixel.y - cellSize * 0.5f);
 	Vec2i LR = Vec2i(pixel.x + cellSize * 0.5f, pixel.y + cellSize * 0.5f );
 	
-	//this if statement fixes our problem
+	//the below four if statements fix our problem
+	if(UL.x < 0){
+		UL.x = 0;
+	}
 	if(UL.y < 0){
 		UL.y = 0;
+	}
+	if(LR.x > getWindowWidth() ){
+		LR.x = getWindowWidth();
+	}
+	if(LR.y > getWindowHeight() ){
+		LR.y = getWindowHeight();
 	}
 	
 	...
@@ -720,4 +729,220 @@ Now we've got a great looking app that allows us to fine-tune our settings until
 \n
 \n
 \image html droplet_4.png
+\n
+\n
+\section wrapup Wrap-Up
+\n
+\n
+Here is all of the final code for our app:
+\n
+\n
+\code
+/*//////////////////////////////////////////////////////////////////////////////////////*/
+/*//////////////////////////////Code from the App.cpp file//////////////////////////////*/
+/*//////////////////////////////////////////////////////////////////////////////////////*/
+
+#include "cinder/app/AppBasic.h"
+#include "cinder/cairo/Cairo.h"
+#include "cinder/ImageIo.h"
+#include "Droplet.h"
+#include "cinder/Rand.h"
+#include <list> 
+
+using namespace ci;
+using namespace ci::app;
+using namespace std;
+
+
+class cairoApp : public AppBasic {
+public:
+	void setup();
+	void update();
+	void draw();
+	void makeDroplet(); 
+	void keyDown(KeyEvent event);
+	int countCalculator();
+	Colorf getColor(Surface32f surface, Vec2i pixel);
+	
+	cairo::Context ctx;
+	Surface32f surface;
+	
+	int cellSize;
+	list<Droplet> droplets;
+};
+
+int cairoApp::countCalculator()
+{
+	int width = getWindowWidth();
+	int height = getWindowHeight(); 
+	int dropletCount = floor(width * height / cellSize / cellSize * 12.0f);
+	return dropletCount;
+}
+
+void cairoApp::keyDown(KeyEvent event)
+{
+	if( event.getChar() == '1' ) {
+		cellSize -= 2;
+	} else if (event.getChar()== '2') {
+		cellSize += 2;
+	}
+	
+	if (cellSize < 2){
+		cellSize = 2;
+	}
+	if (cellSize > getWindowWidth()){
+		cellSize = getWindowWidth();
+	}
+	
+	droplets.clear();
+	
+	for(int i = 0; i < countCalculator(); i++){
+		makeDroplet();  
+	}
+}
+
+void cairoApp::makeDroplet()
+{
+	int x = Rand::randInt(getWindowWidth());
+	int y = Rand::randInt(getWindowHeight());
+	Vec2i pixel = Vec2i(x, y);
+	Colorf average = getColor(surface, pixel);
+	droplets.push_back(Droplet(pixel, ctx, average, cellSize));
+}
+
+Colorf cairoApp::getColor( Surface32f surface, Vec2i pixel){
+	
+	Vec2i UL = Vec2i(pixel.x - cellSize * 0.5f, pixel.y - cellSize * 0.5f);
+	Vec2i LR = Vec2i(pixel.x + cellSize * 0.5f, pixel.y + cellSize * 0.5f);
+	
+	if(UL.x < 0){
+		UL.x = 0;
+	}
+	if(UL.y < 0){
+		UL.y = 0;
+	}
+	if(LR.x > getWindowWidth() ){
+		LR.x = getWindowWidth();
+	}
+	if(LR.y > getWindowHeight() ){
+		LR.y = getWindowHeight();
+	}
+	
+	int totalPixels = 0;
+	float rTotal = 0.0f;
+	float gTotal = 0.0f;
+	float bTotal = 0.0f;
+	
+	for(int x = int(UL.x); x <= int(LR.x); x++){
+		
+		for(int y = int(UL.y); y <= int(LR.y); y++){
+			
+			Vec2i currentPixel = Vec2i(x,y);
+			float r = *surface.getDataRed(currentPixel);
+			float g = *surface.getDataGreen(currentPixel);
+			float b = *surface.getDataBlue(currentPixel);
+			
+			rTotal += r;
+			gTotal += g;
+			bTotal += b;
+			totalPixels++;
+		}
+	}
+	
+	float r = rTotal / totalPixels;
+	float g = gTotal / totalPixels;
+	float b = bTotal / totalPixels;
+	
+	return Colorf( r, g, b );
+}
+
+void cairoApp::setup()
+{
+	ctx = cairo::Context(cairo::createWindowSurface());
+	surface = Surface32f( loadImage( loadResource("sunset.png") ) );
+	cellSize = 10;
+	
+	for(int i = 0; i < countCalculator(); i++){
+		makeDroplet();  
+	}
+}
+
+void cairoApp::update()
+{
+}
+
+void cairoApp::draw()
+{
+	ctx.setSource(Colorf(0.5,0.5,0.5));
+	ctx.paint();
+	for( list<Droplet>::iterator i = droplets.begin(); i != droplets.end(); ++i ) {
+        i->draw();
+    }
+}
+
+CINDER_APP_BASIC( cairoApp, Renderer2d )
+
+/*//////////////////////////////////////////////////////////////////////////////////////*/
+/*//////////////////////////////Code from the Droplet.h file////////////////////////////*/
+/*//////////////////////////////////////////////////////////////////////////////////////*/
+
+#pragma once
+#include "cinder/cairo/Cairo.h"
+
+using namespace ci;
+using namespace std;
+
+class Droplet {
+public:
+    Droplet();
+	Droplet(Vec2i pixel, cairo::Context &ctx, Colorf average, int cellSize);
+	
+    void draw();
+
+    cairo::Context mCtx;
+    Vec2f mPosition;
+    float mRadius;
+	Colorf mColor;	
+};
+
+/*//////////////////////////////////////////////////////////////////////////////////////*/
+/*///////////////////////////Code from the Droplet.cpp file/////////////////////////////*/
+/*//////////////////////////////////////////////////////////////////////////////////////*/
+#include "Droplet.h"
+#include "cinder/cairo/Cairo.h"
+
+Droplet::Droplet()
+{
+}
+
+Droplet::Droplet(Vec2i pixel, cairo::Context &ctx, Colorf average, int cellSize)
+{       
+	mPosition = Vec2f(pixel.x, pixel.y);
+	mCtx = ctx;
+	mRadius = cellSize * 0.5f;
+	mColor = average;
+}
+
+void Droplet::draw()
+{
+	Vec2f offset = Vec2f(mRadius * 0.05f, mRadius * 0.05f);
+	cairo::GradientRadial gradient( mPosition + offset, mRadius, mPosition + offset, mRadius * 1.2f );
+	gradient.addColorStop(0, ColorAf(mColor.r * 0.5f, mColor.g * 0.5f, mColor.b * 0.5f, 0.5f) );
+	gradient.addColorStop(1, ColorAf(mColor.r * 0.5f, mColor.g * 0.5f, mColor.b * 0.5f, 0) );
+	mCtx.setSource(gradient);
+	mCtx.circle(mPosition + offset, mRadius * 1.2f);
+	mCtx.fill();
+	
+	mCtx.circle(mPosition, mRadius);
+	mCtx.setSource(mColor);
+	mCtx.fill();
+}
+
+\endcode
+\n
+\n
+\section closing In Closing
+\n
+\n
+Now that you we've covered drawing shapes, writing functions, and creating custom classes, you should be well on your way to making your very own cairo projects.  Go make some awesome apps!
 */

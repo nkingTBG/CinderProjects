@@ -4,7 +4,7 @@
 		uiCtxt = {
 			sepNavIntBoundsRect = "{{0, 0}, {797, 1807}}";
 			sepNavSelRange = "{2516, 0}";
-			sepNavVisRange = "{2100, 695}";
+			sepNavVisRange = "{2104, 691}";
 		};
 	};
 	29B97313FDCFA39411CA2CEA /* Project object */ = {
@@ -48,7 +48,7 @@
 					579,
 					60,
 					20,
-					48.16259765625,
+					48,
 					43,
 					43,
 				);
@@ -62,14 +62,16 @@
 					PBXFileDataSource_Warnings_ColumnID,
 				);
 			};
-			PBXPerProjectTemplateStateSaveDate = 314299839;
-			PBXWorkspaceStateSaveDate = 314299839;
+			PBXPerProjectTemplateStateSaveDate = 314301233;
+			PBXWorkspaceStateSaveDate = 314301233;
 		};
 		perUserProjectItems = {
-			4F85498412BBD81500A66E7B /* PBXTextBookmark */ = 4F85498412BBD81500A66E7B /* PBXTextBookmark */;
-			4FC3F2A512BBD16500D1A9F9 /* PBXTextBookmark */ = 4FC3F2A512BBD16500D1A9F9 /* PBXTextBookmark */;
-			4FC3F2A612BBD16500D1A9F9 /* PBXTextBookmark */ = 4FC3F2A612BBD16500D1A9F9 /* PBXTextBookmark */;
-			4FC3F2AA12BBD22F00D1A9F9 /* PBXTextBookmark */ = 4FC3F2AA12BBD22F00D1A9F9 /* PBXTextBookmark */;
+			4F85498412BBD81500A66E7B = 4F85498412BBD81500A66E7B /* PBXTextBookmark */;
+			4F854AFA12BBDB3C00A66E7B /* PBXTextBookmark */ = 4F854AFA12BBDB3C00A66E7B /* PBXTextBookmark */;
+			4F854AFB12BBDB3C00A66E7B /* PBXTextBookmark */ = 4F854AFB12BBDB3C00A66E7B /* PBXTextBookmark */;
+			4FC3F2A512BBD16500D1A9F9 = 4FC3F2A512BBD16500D1A9F9 /* PBXTextBookmark */;
+			4FC3F2A612BBD16500D1A9F9 = 4FC3F2A612BBD16500D1A9F9 /* PBXTextBookmark */;
+			4FC3F2AA12BBD22F00D1A9F9 = 4FC3F2AA12BBD22F00D1A9F9 /* PBXTextBookmark */;
 		};
 		sourceControlManager = 4FC3F13D12BBC24F00D1A9F9 /* Source Control */;
 		userBuildSettings = {
@@ -84,6 +86,26 @@
 		rType = 0;
 		vrLen = 801;
 		vrLoc = 0;
+	};
+	4F854AFA12BBDB3C00A66E7B /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 4FC3F27312BBCE2000D1A9F9 /* Droplet.cpp */;
+		name = "Droplet.cpp: 8";
+		rLen = 0;
+		rLoc = 158;
+		rType = 0;
+		vrLen = 801;
+		vrLoc = 0;
+	};
+	4F854AFB12BBDB3C00A66E7B /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 00BAE6590E7ED9C10018A608 /* CairoApp.cpp */;
+		name = "CairoApp.cpp: 121";
+		rLen = 0;
+		rLoc = 2516;
+		rType = 0;
+		vrLen = 691;
+		vrLoc = 2104;
 	};
 	4FC3F12112BBC24B00D1A9F9 /* Cairo */ = {
 		isa = PBXExecutable;
@@ -133,7 +155,7 @@
 	};
 	4FC3F27312BBCE2000D1A9F9 /* Droplet.cpp */ = {
 		uiCtxt = {
-			sepNavIntBoundsRect = "{{0, 0}, {797, 508}}";
+			sepNavIntBoundsRect = "{{0, 0}, {797, 502}}";
 			sepNavSelRange = "{158, 0}";
 			sepNavVisRange = "{0, 801}";
 		};
