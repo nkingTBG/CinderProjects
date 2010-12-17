@@ -1,0 +1,213 @@
+// !$*UTF8*$!
+{
+	00BAE6590E7ED9C10018A608 /* CairoApp.cpp */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {797, 481}}";
+			sepNavSelRange = "{389, 0}";
+			sepNavVisRange = "{0, 667}";
+		};
+	};
+	29B97313FDCFA39411CA2CEA /* Project object */ = {
+		activeBuildConfigurationName = Debug;
+		activeExecutable = 4FC3F12112BBC24B00D1A9F9 /* Cairo */;
+		activeTarget = 8D1107260486CEB800E47090 /* Cairo */;
+		addToTargets = (
+			8D1107260486CEB800E47090 /* Cairo */,
+		);
+		codeSenseManager = 4FC3F13E12BBC24F00D1A9F9 /* Code sense */;
+		executables = (
+			4FC3F12112BBC24B00D1A9F9 /* Cairo */,
+		);
+		perUserDictionary = {
+			PBXConfiguration.PBXFileTableDataSource3.PBXFileTableDataSource = {
+				PBXFileTableDataSourceColumnSortingDirectionKey = "-1";
+				PBXFileTableDataSourceColumnSortingKey = PBXFileDataSource_Filename_ColumnID;
+				PBXFileTableDataSourceColumnWidthsKey = (
+					20,
+					619,
+					20,
+					48,
+					43,
+					43,
+					20,
+				);
+				PBXFileTableDataSourceColumnsKey = (
+					PBXFileDataSource_FiletypeID,
+					PBXFileDataSource_Filename_ColumnID,
+					PBXFileDataSource_Built_ColumnID,
+					PBXFileDataSource_ObjectSize_ColumnID,
+					PBXFileDataSource_Errors_ColumnID,
+					PBXFileDataSource_Warnings_ColumnID,
+					PBXFileDataSource_Target_ColumnID,
+				);
+			};
+			PBXConfiguration.PBXTargetDataSource.PBXTargetDataSource = {
+				PBXFileTableDataSourceColumnSortingDirectionKey = "-1";
+				PBXFileTableDataSourceColumnSortingKey = PBXFileDataSource_Filename_ColumnID;
+				PBXFileTableDataSourceColumnWidthsKey = (
+					20,
+					579,
+					60,
+					20,
+					48,
+					43,
+					43,
+				);
+				PBXFileTableDataSourceColumnsKey = (
+					PBXFileDataSource_FiletypeID,
+					PBXFileDataSource_Filename_ColumnID,
+					PBXTargetDataSource_PrimaryAttribute,
+					PBXFileDataSource_Built_ColumnID,
+					PBXFileDataSource_ObjectSize_ColumnID,
+					PBXFileDataSource_Errors_ColumnID,
+					PBXFileDataSource_Warnings_ColumnID,
+				);
+			};
+			PBXPerProjectTemplateStateSaveDate = 314304593;
+			PBXWorkspaceStateSaveDate = 314304593;
+		};
+		perUserProjectItems = {
+			4F8549EB12BBD8F000A66E7B = 4F8549EB12BBD8F000A66E7B /* PBXTextBookmark */;
+			4F854B1412BBE85A00A66E7B /* PBXTextBookmark */ = 4F854B1412BBE85A00A66E7B /* PBXTextBookmark */;
+			4F854B1F12BBE92200A66E7B /* PBXTextBookmark */ = 4F854B1F12BBE92200A66E7B /* PBXTextBookmark */;
+			4F854B2012BBE92200A66E7B /* PBXTextBookmark */ = 4F854B2012BBE92200A66E7B /* PBXTextBookmark */;
+			4F854B2912BBE93300A66E7B /* PBXTextBookmark */ = 4F854B2912BBE93300A66E7B /* PBXTextBookmark */;
+			4F854B3012BBE9AB00A66E7B /* PBXTextBookmark */ = 4F854B3012BBE9AB00A66E7B /* PBXTextBookmark */;
+			4F854B3412BBEA4C00A66E7B /* PBXTextBookmark */ = 4F854B3412BBEA4C00A66E7B /* PBXTextBookmark */;
+			4FC3F21312BBCBBC00D1A9F9 = 4FC3F21312BBCBBC00D1A9F9 /* PBXTextBookmark */;
+		};
+		sourceControlManager = 4FC3F13D12BBC24F00D1A9F9 /* Source Control */;
+		userBuildSettings = {
+		};
+	};
+	4F8549EB12BBD8F000A66E7B /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 00BAE6590E7ED9C10018A608 /* CairoApp.cpp */;
+		name = "CairoApp.cpp: 30";
+		rLen = 0;
+		rLoc = 667;
+		rType = 0;
+		vrLen = 454;
+		vrLoc = 0;
+	};
+	4F854B1412BBE85A00A66E7B /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 00BAE6590E7ED9C10018A608 /* CairoApp.cpp */;
+		name = "CairoApp.cpp: 30";
+		rLen = 0;
+		rLoc = 667;
+		rType = 0;
+		vrLen = 454;
+		vrLoc = 0;
+	};
+	4F854B1F12BBE92200A66E7B /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 00BAE6590E7ED9C10018A608 /* CairoApp.cpp */;
+		name = "CairoApp.cpp: 19";
+		rLen = 14;
+		rLoc = 304;
+		rType = 0;
+		vrLen = 566;
+		vrLoc = 0;
+	};
+	4F854B2012BBE92200A66E7B /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 00BAE6590E7ED9C10018A608 /* CairoApp.cpp */;
+		name = "CairoApp.cpp: 33";
+		rLen = 0;
+		rLoc = 626;
+		rType = 0;
+		vrLen = 561;
+		vrLoc = 0;
+	};
+	4F854B2912BBE93300A66E7B /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 00BAE6590E7ED9C10018A608 /* CairoApp.cpp */;
+		name = "CairoApp.cpp: 19";
+		rLen = 0;
+		rLoc = 359;
+		rType = 0;
+		vrLen = 562;
+		vrLoc = 0;
+	};
+	4F854B3012BBE9AB00A66E7B /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 00BAE6590E7ED9C10018A608 /* CairoApp.cpp */;
+		name = "CairoApp.cpp: 34";
+		rLen = 0;
+		rLoc = 623;
+		rType = 0;
+		vrLen = 640;
+		vrLoc = 0;
+	};
+	4F854B3412BBEA4C00A66E7B /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 00BAE6590E7ED9C10018A608 /* CairoApp.cpp */;
+		name = "CairoApp.cpp: 20";
+		rLen = 0;
+		rLoc = 389;
+		rType = 0;
+		vrLen = 667;
+		vrLoc = 0;
+	};
+	4FC3F12112BBC24B00D1A9F9 /* Cairo */ = {
+		isa = PBXExecutable;
+		activeArgIndices = (
+		);
+		argumentStrings = (
+		);
+		autoAttachOnCrash = 1;
+		breakpointsEnabled = 0;
+		configStateDict = {
+		};
+		customDataFormattersEnabled = 1;
+		dataTipCustomDataFormattersEnabled = 1;
+		dataTipShowTypeColumn = 1;
+		dataTipSortType = 0;
+		debuggerPlugin = GDBDebugging;
+		disassemblyDisplayState = 0;
+		dylibVariantSuffix = "";
+		enableDebugStr = 1;
+		environmentEntries = (
+		);
+		executableSystemSymbolLevel = 0;
+		executableUserSymbolLevel = 0;
+		libgmallocEnabled = 0;
+		name = Cairo;
+		savedGlobals = {
+		};
+		showTypeColumn = 0;
+		sourceDirectories = (
+		);
+	};
+	4FC3F13D12BBC24F00D1A9F9 /* Source Control */ = {
+		isa = PBXSourceControlManager;
+		fallbackIsa = XCSourceControlManager;
+		isSCMEnabled = 0;
+		scmConfiguration = {
+			repositoryNamesForRoots = {
+				"" = "";
+			};
+		};
+	};
+	4FC3F13E12BBC24F00D1A9F9 /* Code sense */ = {
+		isa = PBXCodeSenseManager;
+		indexTemplatePath = "";
+	};
+	4FC3F21312BBCBBC00D1A9F9 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 00BAE6590E7ED9C10018A608 /* CairoApp.cpp */;
+		name = "CairoApp.cpp: 30";
+		rLen = 0;
+		rLoc = 667;
+		rType = 0;
+		vrLen = 454;
+		vrLoc = 0;
+	};
+	8D1107260486CEB800E47090 /* Cairo */ = {
+		activeExec = 0;
+		executables = (
+			4FC3F12112BBC24B00D1A9F9 /* Cairo */,
+		);
+	};
+}
